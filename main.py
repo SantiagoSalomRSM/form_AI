@@ -27,7 +27,7 @@ else:
     except Exception as e:
         logger.error(f"Error configurando el cliente de Gemini: {e}")
 
-GEMINI_MODEL_NAME = "gemini-1.5-flash" # Use a valid model
+GEMINI_MODEL_NAME = "gemini-2.0-flash" # Use a valid model
 
 results_store: Dict[str, str] = {}
 processing_status: Dict[str, bool] = {}
