@@ -1,0 +1,6 @@
+fastapi
+uvicorn[standard]  # Servidor ASGI para desarrollo local y Vercel
+google-generativeai
+python-dotenv      # Para cargar variables de .env localmente
+jinja2             # Para renderizar plantillas HTML
+pydantic           # Para validación de datos (viene con FastAPI, pero explícito es bueno)

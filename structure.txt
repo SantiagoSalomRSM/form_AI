@@ -1,0 +1,8 @@
+.
+├── .env              # Variables de entorno (API Key) - ¡NO SUBIR A GIT!
+├── .gitignore        # Archivos a ignorar por Git
+├── main.py           # Aplicación FastAPI principal
+├── requirements.txt  # Dependencias Python
+├── templates/
+│   └── results.html  # Plantilla HTML para mostrar resultados
+└── vercel.json       # Configuración de despliegue en Vercel
