@@ -8,6 +8,7 @@ from typing import List, Optional, Dict, Any
 import google.generativeai as genai
 from dotenv import load_dotenv
 import asyncio # Para ejecutar tareas en segundo plano
+import time
 
 # --- Configuración Inicial ---
 # ... (keep your existing setup code) ...
@@ -156,7 +157,7 @@ async def get_results_page(request: Request, submission_id: str):
     """
     # ... (keep your existing get_results_page implementation) ...
     logger.info(f"[{submission_id}] Solicitud GET recibida para la página de resultados.")
-
+    time.sleep(1)
     result = results_store.get(submission_id)
     is_processing = submission_id in processing_status
     was_processed = submission_id in results_store # Check if it *ever* existed in results
