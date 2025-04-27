@@ -121,33 +121,6 @@ async def handle_tally_webhook(payload: TallyWebhookPayload, background_tasks: B
     logger.info(f"[{submission_id}] Tarea de Gemini iniciada en segundo plano. Respondiendo OK a Tally.")
     return {"status": "ok", "message": "Processing started"}
 
-
-# --- NEW PUT METHOD (Defined BEFORE the GET for the same path) ---
-@app.put("/results/{submission_id}")
-async def update_result(submission_id: str, update_data: UpdateResultPayload):
-    """
-    Placeholder endpoint to update/modify an existing result.
-    (Implement the actual update logic here if needed).
-    """
-    logger.info(f"[{submission_id}] Received PUT request to update result.")
-
-    if submission_id not in results_store and submission_id not in processing_status:
-        # Or maybe allow creating via PUT? Depends on your logic (upsert)
-        raise HTTPException(status_code=404, detail="Result not found or not yet processed.")
-
-    if submission_id in processing_status:
-         raise HTTPException(status_code=409, detail="Result is currently being processed, cannot update yet.")
-
-    # --- Example Update Logic ---
-    # You might want to overwrite or modify the existing result
-    old_result = results_store.get(submission_id, "N/A")
-    results_store[submission_id] = update_data.new_result
-    logger.info(f"[{submission_id}] Result updated. Reason: {update_data.reason}. Old result was: {old_result[:50]}...")
-    # --- End Example ---
-
-    return {"status": "ok", "submission_id": submission_id, "message": "Result updated successfully."}
-
-
 # --- GET METHOD (Defined AFTER the PUT for the same path) ---
 @app.get("/results/{submission_id}", response_class=HTMLResponse)
 async def get_results_page(request: Request, submission_id: str):
@@ -157,7 +130,7 @@ async def get_results_page(request: Request, submission_id: str):
     """
     # ... (keep your existing get_results_page implementation) ...
     logger.info(f"[{submission_id}] Solicitud GET recibida para la página de resultados.")
-    time.sleep(1)
+    time.sleep(10)
     result = results_store.get(submission_id)
     is_processing = submission_id in processing_status
     was_processed = submission_id in results_store # Check if it *ever* existed in results
