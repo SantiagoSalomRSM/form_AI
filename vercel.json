@@ -1,18 +1,17 @@
 {
   "builds": [
     {
-      "src": "main.py", // Tu archivo principal de FastAPI
-      "use": "@vercel/python",
-      "config": { "maxLambdaSize": "15mb", "runtime": "python3.11" } // Ajusta la versión de Python si es necesario
+      "src": "main.py",
+      "use": "@vercel/python"
     }
   ],
   "routes": [
     {
-      "src": "/(.*)", // Enruta todo el tráfico
-      "dest": "main.py" // Al manejador de FastAPI definido en main.py
+      "src": "/(.*)",
+      "dest": "main.py"
     }
   ],
   "env": {
-    "GEMINI_API_KEY": "@gemini_api_key" // Mapea la variable de entorno de Vercel
+    "GEMINI_API_KEY": "@gemini_api_key"
   }
 }
