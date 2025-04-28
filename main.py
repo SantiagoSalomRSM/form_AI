@@ -102,16 +102,33 @@ async def handle_tally_webhook(payload: TallyWebhookPayload, background_tasks: B
         return {"status": "ok", "message": "Already processed or in progress"}
 
     processing_status[submission_id] = True
-
+    
     prompt_parts = ["Analiza la siguiente respuesta de encuesta y proporciona un resumen o conclusión:\n\n"]
+    
+# -------------------------------------------------
+  
     for field in payload.data.fields:
-        if field.value:
-             value_str = ""
-             if isinstance(field.value, list):
-                 value_str = ", ".join(map(str, field.value))
-             else:
-                 value_str = str(field.value)
-             prompt_parts.append(f"Pregunta: {field.label}\nRespuesta: {value_str}\n---\n")
+        # Obtiene el label. Si es None (null en JSON), usa el string "null"
+        label = field.get('label')
+        label_str = "null" if label is None else str(label).strip() # strip() para quitar espacios extra
+
+        # Obtiene el value
+        value = field.get('value')
+
+        # Formatea el value según su tipo para que coincida con el ejemplo
+        if isinstance(value, list):
+            # Si es una lista, une los elementos con coma y envuélvelos en comillas dobles
+            value_str = f'"{",".join(map(str, value))}"'
+        elif value is None:
+             value_str = "null"
+        else:
+            # Para otros tipos (int, string, etc.), simplemente conviértelos a string
+            value_str = str(value)
+
+        # Crea la línea formateada y añádela a la lista
+        prompt_parts.append(f"Pregunta: {label_str} - Respuesta: {value_str}")
+
+
 
     full_prompt = "".join(prompt_parts)
     logger.debug(f"[{submission_id}] Prompt para Gemini: {full_prompt[:200]}...")
