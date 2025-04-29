@@ -104,29 +104,10 @@ async def handle_tally_webhook(payload: TallyWebhookPayload, background_tasks: B
     processing_status[submission_id] = True
     
     prompt_parts = ["Analiza la siguiente respuesta de encuesta y proporciona un resumen o conclusión:\n\n"]
-    
+    prompt_parts.append(payload.data.fields)
 # -------------------------------------------------
-  
-    for field in payload.data.fields:
-        # Obtiene el label. Si es None (null en JSON), usa el string "null"
-        label = field.get('label')
-        label_str = "null" if label is None else str(label).strip() # strip() para quitar espacios extra
 
-        # Obtiene el value
-        value = field.get('value')
 
-        # Formatea el value según su tipo para que coincida con el ejemplo
-        if isinstance(value, list):
-            # Si es una lista, une los elementos con coma y envuélvelos en comillas dobles
-            value_str = f'"{",".join(map(str, value))}"'
-        elif value is None:
-             value_str = "null"
-        else:
-            # Para otros tipos (int, string, etc.), simplemente conviértelos a string
-            value_str = str(value)
-
-        # Crea la línea formateada y añádela a la lista
-        prompt_parts.append(f"Pregunta: {label_str} - Respuesta: {value_str}")
 
 # -------------------------------------------------
 
