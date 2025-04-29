@@ -128,7 +128,7 @@ async def handle_tally_webhook(payload: TallyWebhookPayload, background_tasks: B
         # Crea la línea formateada y añádela a la lista
         prompt_parts.append(f"Pregunta: {label_str} - Respuesta: {value_str}")
 
-
+# -------------------------------------------------
 
     full_prompt = "".join(prompt_parts)
     logger.debug(f"[{submission_id}] Prompt para Gemini: {full_prompt[:200]}...")
