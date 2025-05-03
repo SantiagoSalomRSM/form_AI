@@ -124,8 +124,13 @@ async def handle_tally_webhook(payload: TallyWebhookPayload, background_tasks: B
 
         # Formatea el value según su tipo para que coincida con el ejemplo
         if isinstance(value, list):
-            # Si es una lista, une los elementos con coma y envuélvelos en comillas dobles
-            value_str = f'"{",".join(map(str, value))}"'
+            try:
+                # Si es una lista, une los elementos con coma y envuélvelos en comillas dobles
+                value_str = f'"{",".join(map(str, value))}"'
+            except Exception as e:
+            # Añadir logging por si falla la conversión a string
+                logger.error(f"[{submission_id}] Error convirtiendo lista a string para campo {field.key}: {e}")
+                value_str = "[Error procesando lista]" # Valor por defecto o manejo alternativo
         elif value is None:
              value_str = "null"
         else:
