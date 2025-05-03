@@ -120,8 +120,8 @@ async def handle_tally_webhook(payload: TallyWebhookPayload, background_tasks: B
         label = field.label
         label_str = "null" if label is None else str(label).strip() # strip() para quitar espacios extra
         # Obtiene el value
-        value = field.get('value')
-
+        value = field.value
+        logger.info(f"[{submission_id}] 124 {label} - {label_str} - {value}.")    #chivato
         # Formatea el value según su tipo para que coincida con el ejemplo
         if isinstance(value, list):
             try:
@@ -160,7 +160,7 @@ async def get_results_page(request: Request, submission_id: str):
     """
     # ... (keep your existing get_results_page implementation) ...
     logger.info(f"[{submission_id}] Solicitud GET recibida para la página de resultados.")
-    time.sleep(30)
+    time.sleep(10)
     result = results_store.get(submission_id)
     is_processing = submission_id in processing_status
     was_processed = submission_id in results_store # Check if it *ever* existed in results
