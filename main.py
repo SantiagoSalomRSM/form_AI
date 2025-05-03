@@ -155,7 +155,7 @@ async def get_results_page(request: Request, submission_id: str):
     """
     # ... (keep your existing get_results_page implementation) ...
     logger.info(f"[{submission_id}] Solicitud GET recibida para la página de resultados.")
-    time.sleep(10)
+    time.sleep(30)
     result = results_store.get(submission_id)
     is_processing = submission_id in processing_status
     was_processed = submission_id in results_store # Check if it *ever* existed in results
