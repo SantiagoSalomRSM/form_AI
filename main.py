@@ -112,16 +112,16 @@ async def handle_tally_webhook(payload: TallyWebhookPayload, background_tasks: B
     processing_status[submission_id] = True
     logger.info(f"[{submission_id}] 113.")    #chivato
     prompt_parts = ["Analiza la siguiente respuesta de encuesta y proporciona un resumen o conclusión:\n\n"]
-    logger.info(f"[{submission_id}] 114.")    #chivato
+    K
 # -------------------------------------------------
 
     for field in payload.data.fields:
         # Obtiene el label. Si es None (null en JSON), usa el string "null"
-        label = field.get('label')
+        label = field.label
         label_str = "null" if label is None else str(label).strip() # strip() para quitar espacios extra
         logger.info(f"[{submission_id}] 122.")    #chivato
         # Obtiene el value
-        value = field.get('value')
+        value = field.value
 
         # Formatea el value según su tipo para que coincida con el ejemplo
         if isinstance(value, list):
