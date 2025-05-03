@@ -115,7 +115,7 @@ async def handle_tally_webhook(payload: TallyWebhookPayload, background_tasks: B
 # -------------------------------------------------
 
     for field in payload.data.fields:
-        logger.info(f"[{submission_id}] 119.")    #chivato
+        logger.info(f"[{submission_id}] 118.")    #chivato
         # Obtiene el label. Si es None (null en JSON), usa el string "null"
         label = field.label
         label_str = "null" if label is None else str(label).strip() # strip() para quitar espacios extra
