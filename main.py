@@ -155,7 +155,7 @@ async def get_results_page(request: Request, submission_id: str):
     """
     # ... (keep your existing get_results_page implementation) ...
     logger.info(f"[{submission_id}] Solicitud GET recibida para la página de resultados.")
-    time.sleep(20)
+    time.sleep(10)
     result = results_store.get(submission_id)
     is_processing = submission_id in processing_status
     was_processed = submission_id in results_store # Check if it *ever* existed in results
@@ -176,7 +176,7 @@ async def get_results_page(request: Request, submission_id: str):
          logger.info(f"[{submission_id}] Aún procesando. Mostrando mensaje de espera.")
          return templates.TemplateResponse("results.html", context)
     else:
-        logger.warning(f"[{submission_id}] No se encontró resultado ni está en proceso.")
+        logger.warning(f"[{submission_id}] No se encontró resultado ni está en proceso - {was_processed}")
         # Return 404 status code while still rendering the page with a message
         return templates.TemplateResponse("results.html", context, status_code=404)
 
