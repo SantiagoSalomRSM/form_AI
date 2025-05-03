@@ -94,7 +94,8 @@ async def generate_gemini_response(submission_id: str, prompt: str):
         results_store[submission_id] = f"Error al procesar con Gemini: {e}"
     finally:
         processing_status.pop(submission_id, None)
-
+    logger.info(f"[{submission_id}] 97 - Respuesta generada {results_store[submission_id]}")
+    
 # --- Endpoints FastAPI ---
 
 @app.post("/webhook")
@@ -114,7 +115,6 @@ async def handle_tally_webhook(payload: TallyWebhookPayload, background_tasks: B
 # -------------------------------------------------
 
     for field in payload.data.fields:
-        logger.info(f"[{submission_id}] 118.")    #chivato
         # Obtiene el label. Si es None (null en JSON), usa el string "null"
         label = field.label
         label_str = "null" if label is None else str(label).strip() # strip() para quitar espacios extra
@@ -138,10 +138,8 @@ async def handle_tally_webhook(payload: TallyWebhookPayload, background_tasks: B
 
         # Crea la línea formateada y añádela a la lista
         prompt_parts.append(f"Pregunta: {label_str} - Respuesta: {value_str}")
-        logger.info(f"[{submission_id}] 138.")    #chivato
 
 # -------------------------------------------------
-    logger.info(f"[{submission_id}] 145 - {prompt_parts}.")    #chivato
     full_prompt = "".join(prompt_parts)
     logger.debug(f"[{submission_id}] Prompt para Gemini: {full_prompt[:200]}...")
 
@@ -158,9 +156,8 @@ async def get_results_page(request: Request, submission_id: str):
     o un mensaje de "procesando".
     """
     # ... (keep your existing get_results_page implementation) ...
-    logger.info(f"[{submission_id}] Solicitud GET recibida para la página de resultados.")
-    time.sleep(10)
     result = results_store.get(submission_id)
+    logger.info(f"[{submission_id}] 160-Solicitud GET recibida para la página de resultados - {result}")    
     is_processing = submission_id in processing_status
     was_processed = submission_id in results_store # Check if it *ever* existed in results
 
