@@ -107,18 +107,19 @@ async def handle_tally_webhook(payload: TallyWebhookPayload, background_tasks: B
     if submission_id in results_store or submission_id in processing_status:
         logger.warning(f"[{submission_id}] Ya procesado o en proceso. Ignorando.")
         return {"status": "ok", "message": "Already processed or in progress"}
-
+    
+    logger.info(f"[{submission_id}] Webhook recibido de Tally.")
     processing_status[submission_id] = True
-    
+    logger.info(f"[{submission_id}] 113.")    #chivato
     prompt_parts = ["Analiza la siguiente respuesta de encuesta y proporciona un resumen o conclusión:\n\n"]
-    
+    logger.info(f"[{submission_id}] 114.")    #chivato
 # -------------------------------------------------
 
     for field in payload.data.fields:
         # Obtiene el label. Si es None (null en JSON), usa el string "null"
         label = field.get('label')
         label_str = "null" if label is None else str(label).strip() # strip() para quitar espacios extra
-
+        logger.info(f"[{submission_id}] 122.")    #chivato
         # Obtiene el value
         value = field.get('value')
 
@@ -134,10 +135,10 @@ async def handle_tally_webhook(payload: TallyWebhookPayload, background_tasks: B
 
         # Crea la línea formateada y añádela a la lista
         prompt_parts.append(f"Pregunta: {label_str} - Respuesta: {value_str}")
-
+        logger.info(f"[{submission_id}] 138.")    #chivato
 
 # -------------------------------------------------
-
+    logger.info(f"[{submission_id}] 141.")    #chivato
     full_prompt = "".join(prompt_parts)
     logger.debug(f"[{submission_id}] Prompt para Gemini: {full_prompt[:200]}...")
 
