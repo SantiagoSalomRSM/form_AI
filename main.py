@@ -37,13 +37,20 @@ templates = Jinja2Templates(directory="templates")
 
 # --- Modelos Pydantic ---
 # ... (keep your existing Pydantic models) ...
+class TallyOption(BaseModel):
+    id: str
+    text: str
+    
 class TallyField(BaseModel):
     key: str
-    label: str
+    label: Optional[str]
     value: Any
     type: str
+    options: Optional[List[TallyOption]] = None
 
 class TallyResponseData(BaseModel):
+    responseId: str
+    submissionId: str
     fields: List[TallyField]
 
 class TallyWebhookPayload(BaseModel):
