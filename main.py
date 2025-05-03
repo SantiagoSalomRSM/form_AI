@@ -73,10 +73,9 @@ async def generate_gemini_response(submission_id: str, prompt: str):
     try:
         model = genai.GenerativeModel(GEMINI_MODEL_NAME)
         response = await model.generate_content_async(prompt)
-
         if response and hasattr(response, 'text'):
              result_text = response.text
-             logger.info(f"[{submission_id}] Respuesta de Gemini recibida.")
+             logger.info(f"[{submission_id}] Respuesta de Gemini recibida - {prompt} ----> {result_text}.")
              results_store[submission_id] = result_text
         elif response and hasattr(response, 'parts'):
              result_text = "".join(part.text for part in response.parts if hasattr(part, 'text'))
@@ -142,7 +141,7 @@ async def handle_tally_webhook(payload: TallyWebhookPayload, background_tasks: B
         logger.info(f"[{submission_id}] 138.")    #chivato
 
 # -------------------------------------------------
-    logger.info(f"[{submission_id}] 141.")    #chivato
+    logger.info(f"[{submission_id}] 145 - {prompt_parts}.")    #chivato
     full_prompt = "".join(prompt_parts)
     logger.debug(f"[{submission_id}] Prompt para Gemini: {full_prompt[:200]}...")
 
