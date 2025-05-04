@@ -23,12 +23,22 @@
         <div class="result-box processing">
             <p>Tu resultado se está procesando...</p>
             <p>Por favor, espera unos segundos y <strong>refresca esta página</strong> manualmente.</p>
+            <p>(ID: {{ submission_id }})</p>
         </div>
     {% elif status == "error" %}
         <div class="result-box error">
             <p><strong>Ocurrió un error</strong> al procesar tu solicitud con Gemini.</p>
+            {% if error_message %}
+        <   p>Detalle: <pre>{{ error_message }}</pre></p>
+            {% endif %}
             <p>ID de Envío: {{ submission_id }}</p>
             <p>Por favor, inténtalo de nuevo o contacta al administrador si el problema persiste.</p>
+        </div>
+    {% elif status == "critical_error" %} {# Manejar errores de conexión a Redis, etc. #}
+        <div class="result-box error">
+            <p><strong>Error Crítico del Servidor</strong></p>
+            <p>{{ error_message | default('No se pudo procesar la solicitud debido a un problema interno.') }}</p>
+            <p>ID de Envío: {{ submission_id }}</p>
         </div>
     {% elif status == "not_found" %}
         <div class="result-box not-found">
@@ -37,7 +47,7 @@
         </div>
     {% else %}
          <div class="result-box">
-             <p>Estado desconocido para el ID: {{ submission_id }}</p>
+             <p>Estado desconocido ({{ status }}) para el ID: {{ submission_id }}</p>
          </div>
     {% endif %}
 

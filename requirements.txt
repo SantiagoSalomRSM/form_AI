@@ -4,3 +4,4 @@ google-generativeai
 python-dotenv      # Para cargar variables de .env localmente
 jinja2             # Para renderizar plantillas HTML
 pydantic           # Para validación de datos (viene con FastAPI, pero explícito es bueno)
+redis              # bbdd para el control de fuljo asíncrono

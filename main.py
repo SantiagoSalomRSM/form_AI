@@ -9,14 +9,14 @@ import google.generativeai as genai
 from dotenv import load_dotenv
 import asyncio # Para ejecutar tareas en segundo plano
 import time
+import redis 
 
 # --- Configuración Inicial ---
-# ... (keep your existing setup code) ...
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
 load_dotenv()
 
+# --- Configuración Gemini
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 if not GEMINI_API_KEY:
     logger.error("Error: La variable de entorno GEMINI_API_KEY no está configurada.")
@@ -29,10 +29,36 @@ else:
 
 GEMINI_MODEL_NAME = "gemini-2.0-flash" # Use a valid model
 
-GEMINI_ERROR_MARKER = "ERROR_PROCESSING_GEMINI" # Marcador para errores
-results_store: Dict[str, str] = {}
-processing_status: Dict[str, bool] = {}
+# --- Configuración Redis ---
+REDIS_URL = os.getenv("REDIS_URL")
+if not REDIS_URL:
+    logger.error("CRITICAL: La variable de entorno REDIS_URL no está configurada.")
+    # En producción (Vercel), esto debería detener la aplicación o manejarlo
+    # como un error crítico. Para local, podrías poner una URL por defecto si tienes Redis local.
+    raise ValueError("REDIS_URL environment variable is not set.")
 
+try:
+    # Crear cliente Redis desde la URL. decode_responses=True es útil.
+    redis_client = redis.Redis.from_url(REDIS_URL, decode_responses=True)
+    redis_client.ping() # Prueba la conexión al iniciar
+    logger.info("Conectado a Redis correctamente.")
+except redis.exceptions.ConnectionError as e:
+    logger.error(f"CRITICAL: Error conectando a Redis: {e}")
+    # La aplicación no puede funcionar sin Redis, lanzar error
+    raise ConnectionError(f"No se pudo conectar a Redis: {e}") from e
+except Exception as e:
+     logger.error(f"CRITICAL: Error inesperado al inicializar Redis: {e}")
+     raise e
+
+# --- Constantes de Estado y TTL ---
+STATUS_PROCESSING = "processing"
+STATUS_SUCCESS = "success"
+STATUS_ERROR = "error"
+STATUS_NOT_FOUND = "not_found" # Estado implícito si no existe la key
+GEMINI_ERROR_MARKER = "ERROR_PROCESSING_GEMINI" # Marcador en el resultado
+REDIS_TTL_SECONDS = 86400 # Tiempo de vida de las keys en Redis (ej: 1 día)
+
+# --- App FastAPI ---
 app = FastAPI(title="Tally Webhook Processor")
 templates = Jinja2Templates(directory="templates")
 
@@ -66,48 +92,55 @@ class UpdateResultPayload(BaseModel):
 
 
 # --- Lógica para interactuar con Gemini ---
-# ... (keep your existing generate_gemini_response function) ...
 async def generate_gemini_response(submission_id: str, prompt: str):
-    logger.info(f"[{submission_id}] Generando respuesta de Gemini...")
-    # Add result to store, handle errors, remove from processing_status
-    # (Your existing logic here)
+    # Define las claves de Redis que se usarán para este submission_id
+    status_key = f"status:{submission_id}"
+    result_key = f"result:{submission_id}"
+    logger.info(f"[{submission_id}] Iniciando tarea Gemini. Keys Redis: {status_key}, {result_key}")
+    
     try:
+        # --- Llamada a Gemini API (lógica sin cambios) ---
         model = genai.GenerativeModel(GEMINI_MODEL_NAME)
         response = await model.generate_content_async(prompt)
         result_text = None # Inicializa result_text
 
         if response and hasattr(response, 'text') and response.text:
              result_text = response.text
-             logger.info(f"[{submission_id}] Respuesta de Gemini recibida - {prompt} ----> {result_text}.")
+             logger.info(f"[{submission_id}] Respuesta de Gemini recibida (text)")
         elif response and hasattr(response, 'parts'):
              result_text = "".join(part.text for part in response.parts if hasattr(part, 'text'))
              if result_text:
                 logger.info(f"[{submission_id}] Respuesta de Gemini recibida (desde parts).")
              else:
-                 logger.warning(f"[{submission_id}] Respuesta de Gemini recibida pero sin contenido de texto en 'parts'. Respuesta: {response}")
+                 logger.warning(f"[{submission_id}] Respuesta de Gemini (parts) sin texto")
                  result_text = None # Asegura que no se guarde si está vacío
         else:
-            logger.warning(f"[{submission_id}] Respuesta de Gemini recibida pero sin contenido de texto. Respuesta: {response}")
-
+            logger.warning(f"[{submission_id}] Respuesta Gemini inesperada o sin texto")
+ 
+        # --- Actualizar Redis con el resultado ---
         if result_text:
-            results_store[submission_id] = result_text
-            logger.info(f"[{submission_id}] Resultado guardado correctamente.")
+            redis_client.set(result_key, result_text, ex=REDIS_TTL_SECONDS)
+            redis_client.set(status_key, STATUS_SUCCESS, ex=REDIS_TTL_SECONDS)
+            logger.info(f"[{submission_id}] Estado '{STATUS_SUCCESS}' y resultado guardados en Redis.")
         else:
-             # Si no hubo texto válido, márcalo como error
-             results_store[submission_id] = GEMINI_ERROR_MARKER
-             logger.warning(f"[{submission_id}] No se obtuvo texto v\u00E1lido de Gemini. Marcado como error.")
-
-        # Elimina de processing SOLO si tuvimos éxito o marcamos error aquí
-        processing_status.pop(submission_id, None)
+            # Si no hay texto válido, guardar error
+            redis_client.set(result_key, GEMINI_ERROR_MARKER, ex=REDIS_TTL_SECONDS)
+            redis_client.set(status_key, STATUS_ERROR, ex=REDIS_TTL_SECONDS)
+            logger.warning(f"[{submission_id}] Estado '{STATUS_ERROR}' y marcador guardados en Redis (sin texto válido).")
 
     except Exception as e:
-        logger.error(f"[{submission_id}] Error llamando a la API de Gemini: {e}")
-        # Guarda el marcador de error en caso de excepción
-        results_store[submission_id] = GEMINI_ERROR_MARKER
-        # Elimina de processing DESPUÉS de marcar el error
-        processing_status.pop(submission_id, None)
-    # NO hay bloque finally aquí para pop
-    logger.info(f"[{submission_id}] Procesamiento de Gemini finalizado. Estado guardado: {results_store.get(submission_id)}")
+        logger.error(f"[{submission_id}] Excepción durante procesamiento Gemini: {e}", exc_info=True) # Log con traceback
+        try:
+            # Intenta guardar el estado de error incluso si Gemini falló
+            redis_client.set(result_key, f"Error interno: {e}", ex=REDIS_TTL_SECONDS) # Guarda el mensaje de error si es posible
+            redis_client.set(status_key, STATUS_ERROR, ex=REDIS_TTL_SECONDS)
+            logger.warning(f"[{submission_id}] Estado '{STATUS_ERROR}' guardado en Redis debido a excepción.")
+        except redis.exceptions.RedisError as redis_err:
+            logger.error(f"[{submission_id}] CRITICAL: Fallo al guardar estado de error en Redis tras excepción Gemini: {redis_err}")
+        except Exception as inner_e:
+             logger.error(f"[{submission_id}] CRITICAL: Error inesperado al guardar estado de error en Redis: {inner_e}")
+
+    logger.info(f"[{submission_id}] Tarea Gemini finalizada.")
     
 # --- Endpoints FastAPI ---
 
@@ -115,86 +148,135 @@ async def generate_gemini_response(submission_id: str, prompt: str):
 async def handle_tally_webhook(payload: TallyWebhookPayload, background_tasks: BackgroundTasks):
     # ... (keep your existing webhook handler) ...
     submission_id = payload.eventId
-    logger.info(f"[{submission_id}] Webhook recibido de Tally.")
+    status_key = f"status:{submission_id}"
+    logger.info(f"[{submission_id}] Webhook recibido. Verificando Redis (Key: {status_key}).")
 
-    if submission_id in results_store or submission_id in processing_status:
-        logger.warning(f"[{submission_id}] Ya procesado o en proceso. Ignorando.")
-        return {"status": "ok", "message": "Already processed or in progress"}
-    
+    try:
+        # Verificar si ya existe un estado final (success o error) o si aún está procesando
+        # Usamos SET con NX (Not Exists) y GET para hacerlo atómico y evitar race conditions
+        # set(key, value, nx=True) -> True si la key se creó, False si ya existía
+        if not redis_client.set(status_key, STATUS_PROCESSING, nx=True, ex=REDIS_TTL_SECONDS):
+            # La key ya existía. Comprobar qué estado tiene.
+            current_status = redis_client.get(status_key)
+            if current_status == STATUS_PROCESSING:
+                logger.warning(f"[{submission_id}] Webhook ignorado: ya está en estado '{STATUS_PROCESSING}'.")
+                return {"status": "ok", "message": "Already processing"}
+            else: # Ya tiene un estado final (success/error)
+                 logger.warning(f"[{submission_id}] Webhook ignorado: ya tiene estado final '{current_status}'.")
+                 return {"status": "ok", "message": f"Already processed with status: {current_status}"}
 
-    processing_status[submission_id] = True
-    prompt_parts = ["Analiza la siguiente respuesta de encuesta y proporciona un resumen o conclusión:\n\n"]
-    
+        # Si llegamos aquí, redis_client.set tuvo éxito (nx=True), la key se creó y se puso en 'processing'
+        logger.info(f"[{submission_id}] Estado '{STATUS_PROCESSING}' establecido en Redis.")
+
+        # --- Generación del Prompt (sin cambios) ---
+        prompt_parts = ["Analiza la siguiente respuesta de encuesta y proporciona un resumen o conclusión:\n\n"]
+  
 # -------------------------------------------------
-
-    for field in payload.data.fields:
-        # Obtiene el label. Si es None (null en JSON), usa el string "null"
-        label = field.label
-        label_str = "null" if label is None else str(label).strip() # strip() para quitar espacios extra
-        # Obtiene el value
-        value = field.value
-        logger.info(f"[{submission_id}] 124 {label} - {label_str} - {value}.")    #chivato
-        # Formatea el value según su tipo para que coincida con el ejemplo
-        if isinstance(value, list):
-            try:
-                # Si es una lista, une los elementos con coma y envuélvelos en comillas dobles
-                value_str = f'"{",".join(map(str, value))}"'
-            except Exception as e:
-            # Añadir logging por si falla la conversión a string
-                logger.error(f"[{submission_id}] Error convirtiendo lista a string para campo {field.key}: {e}")
-                value_str = "[Error procesando lista]" # Valor por defecto o manejo alternativo
-        elif value is None:
-             value_str = "null"
-        else:
-            # Para otros tipos (int, string, etc.), simplemente conviértelos a string
-            value_str = str(value)
-
-        # Crea la línea formateada y añádela a la lista
-        prompt_parts.append(f"Pregunta: {label_str} - Respuesta: {value_str}")
-
+         # ... ( lógica para construir el prompt con payload.data.fields) ... 
+        for field in payload.data.fields:
+            label = field.label
+            label_str = "null" if label is None else str(label).strip()
+            value = field.value
+            value_str = ""
+            if isinstance(value, list):
+                try:
+                    value_str = f'"{",".join(map(str, value))}"'
+                except Exception as e:
+                    logger.error(f"[{submission_id}] Error convirtiendo lista a string: {e}")
+                    value_str = "[Error procesando lista]"
+            elif value is None:
+                value_str = "null"
+            else:
+                value_str = str(value)
+            prompt_parts.append(f"Pregunta: {label_str} - Respuesta: {value_str}")
 # -------------------------------------------------
-    full_prompt = "".join(prompt_parts)
-    logger.debug(f"[{submission_id}] Prompt para Gemini: {full_prompt[:200]}...")
+        full_prompt = "".join(prompt_parts)
+        logger.debug(f"[{submission_id}] Prompt para Gemini: {full_prompt[:200]}...")
+ 
+    # --- Iniciar Tarea en Segundo Plano ---
+        background_tasks.add_task(generate_gemini_response, submission_id, full_prompt)
+        logger.info(f"[{submission_id}] Tarea de Gemini iniciada en segundo plano.")
 
-    background_tasks.add_task(generate_gemini_response, submission_id, full_prompt)
+        return {"status": "ok", "message": "Processing started"}
 
-    logger.info(f"[{submission_id}] Tarea de Gemini iniciada en segundo plano. Respondiendo OK a Tally.")
-    return {"status": "ok", "message": "Processing started"}
+    except redis.exceptions.RedisError as e:
+        logger.error(f"[{submission_id}] Error de Redis en webhook: {e}")
+        # Devolver error 500 si Redis falla aquí es crítico
+        raise HTTPException(status_code=500, detail="Internal server error (Redis operation failed)")
+    except Exception as e:
+        logger.error(f"[{submission_id}] Error inesperado en webhook: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
+
 
 # --- GET METHOD (Defined AFTER the PUT for the same path) ---
 @app.get("/results/{submission_id}", response_class=HTMLResponse)
 async def get_results_page(request: Request, submission_id: str):
-    """
-    Muestra la página HTML con el resultado, mensaje de procesando,
-    mensaje de error, o mensaje de no encontrado.
-    """
-    result_value = results_store.get(submission_id)
-    is_processing = submission_id in processing_status
-    status = ""
-    status_code = 200 # Default status code
+    status_key = f"status:{submission_id}"
+    result_key = f"result:{submission_id}"
+    logger.info(f"[{submission_id}] GET /results. Consultando Redis (Keys: {status_key}, {result_key}).")
 
-    if is_processing:
-        status = "processing"
-        logger.info(f"[{submission_id}] A\u00FAn procesando.")
-    elif result_value == GEMINI_ERROR_MARKER:
-        status = "error"
-        logger.warning(f"[{submission_id}] Se encontr\u00F3 un marcador de error.")
-    elif result_value is not None: # Existe y no es el marcador de error
-        status = "success"
-        logger.info(f"[{submission_id}] Resultado encontrado con \u00E9xito.")
-    else: # No está procesando, no hay resultado ni error guardado
-        status = "not_found"
-        status_code = 404 # Not Found
-        logger.warning(f"[{submission_id}] No se encontr\u00F3 resultado ni est\u00E1 en proceso (not_found).")
+    final_status = STATUS_NOT_FOUND # Estado por defecto si no encontramos la key de estado
+    result_value = None
+    error_message = None
+    http_status_code = 404 # Por defecto es Not Found
 
-    context = {
-        "request": request,
-        "submission_id": submission_id,
-        "result": result_value if status == "success" else None, # Solo pasa el resultado si es exitoso
-        "status": status # Pasa el estado determinado
-    }
+    try:
+        # Obtener el estado de Redis
+        redis_status = redis_client.get(status_key)
 
-    return templates.TemplateResponse("results.html", context, status_code=status_code)
+        if redis_status == STATUS_PROCESSING:
+            final_status = STATUS_PROCESSING
+            http_status_code = 200 # Página encontrada, pero está procesando
+            logger.info(f"[{submission_id}] Estado Redis: {STATUS_PROCESSING}")
+        elif redis_status == STATUS_SUCCESS:
+            final_status = STATUS_SUCCESS
+            http_status_code = 200
+            result_value = redis_client.get(result_key)
+            logger.info(f"[{submission_id}] Estado Redis: {STATUS_SUCCESS}. Resultado obtenido.")
+            if result_value is None:
+                # Puede pasar si la key de resultado expiró antes que la de estado (poco probable con mismo TTL)
+                logger.error(f"[{submission_id}] INCONSISTENCIA: Estado es '{STATUS_SUCCESS}' pero falta resultado en {result_key}")
+                final_status = STATUS_ERROR
+                error_message = "Error: Resultado no encontrado a pesar de estado exitoso."
+        elif redis_status == STATUS_ERROR:
+            final_status = STATUS_ERROR
+            http_status_code = 200 # Mostramos la página de error normalmente
+            error_message = redis_client.get(result_key) # Obtenemos el mensaje/marcador de error
+            logger.warning(f"[{submission_id}] Estado Redis: {STATUS_ERROR}. Mensaje/marcador: {error_message}")
+        elif redis_status is None:
+            # La key de estado no existe, por lo tanto "not found"
+            final_status = STATUS_NOT_FOUND
+            http_status_code = 404
+            logger.warning(f"[{submission_id}] No se encontró estado en Redis (key: {status_key}).")
+        else:
+            # Estado inesperado guardado en Redis
+            final_status = STATUS_ERROR
+            http_status_code = 500 # Error interno porque el estado es inválido
+            error_message = f"Error interno: Estado inválido '{redis_status}' encontrado en Redis."
+            logger.error(f"[{submission_id}] {error_message}")
+
+        # Contexto para la plantilla
+        context = {
+            "request": request,
+            "submission_id": submission_id,
+            "result": result_value if final_status == STATUS_SUCCESS else None,
+            "error_message": error_message if final_status == STATUS_ERROR else None,
+            "status": final_status # Pasar el estado final a la plantilla
+        }
+
+        return templates.TemplateResponse("results.html", context, status_code=http_status_code)
+
+    except redis.exceptions.RedisError as e:
+        logger.error(f"[{submission_id}] Error de Redis en GET /results: {e}")
+        # Error crítico al intentar leer de Redis
+        context = {"request": request, "submission_id": submission_id, "status": "critical_error", "error_message": "Error de comunicación con la base de datos de estado."}
+        # Devolver 503 Service Unavailable podría ser apropiado
+        return templates.TemplateResponse("results.html", context, status_code=503)
+    except Exception as e:
+         logger.error(f"[{submission_id}] Error inesperado en GET /results: {e}", exc_info=True)
+         context = {"request": request, "submission_id": submission_id, "status": "critical_error", "error_message": "Error interno del servidor."}
+         return templates.TemplateResponse("results.html", context, status_code=500)
+
 
 
 @app.get("/")
