@@ -213,18 +213,21 @@ async def handle_tally_webhook(payload: TallyWebhookPayload, background_tasks: B
 # --- GET METHOD (Defined AFTER the PUT for the same path) ---
 @app.get("/results/{submission_id}", response_class=HTMLResponse)
 async def get_results_page(request: Request, submission_id: str):
-    status_key = f"status:{submission_id}"
-    result_key = f"result:{submission_id}"
-    logger.info(f"[{submission_id}] GET /results. Consultando Redis (Keys: {status_key}, {result_key}).")
 
     final_status = STATUS_NOT_FOUND # Estado por defecto si no encontramos la key de estado
     result_value = None
     error_message = None
     http_status_code = 404 # Por defecto es Not Found
 
+    status_key = f"status:{submission_id}"
+    result_key = f"result:{submission_id}"
+    logger.info(f"[{submission_id}] GET /results. Consultando Redis (Keys: {status_key}, {result_key}).")
+
     try:
-        # Obtener el estado de Redis
+        # Obtener el estado en Redis
         redis_status = redis_client.get(status_key)
+        logger.info(f"[{submission_id}] Estado en Redis: {redis_status}).")
+
 
         if redis_status == STATUS_PROCESSING:
             final_status = STATUS_PROCESSING
