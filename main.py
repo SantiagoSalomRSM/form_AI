@@ -155,7 +155,7 @@ async def get_results_page(request: Request, submission_id: str):
     Muestra la página HTML con el resultado de Gemini si está listo,
     o un mensaje de "procesando".
     """
-    time.sleep(10)
+    await asyncio.sleep(10)
     # ... (keep your existing get_results_page implementation) ...
     result = results_store.get(submission_id)
     logger.info(f"[{submission_id}] 160-Solicitud GET recibida para la página de resultados - {result}")    
