@@ -31,6 +31,8 @@ GEMINI_MODEL_NAME = "gemini-2.0-flash" # Use a valid model
 
 # --- Configuración Redis ---
 REDIS_URL = os.getenv("REDIS_URL")
+REDIS_KEY = os.getenv("REDIS_KEY")
+REDIS_PORT = os.getenv("REDIS_PORT")
 if not REDIS_URL:
     logger.error("CRITICAL: La variable de entorno REDIS_URL no está configurada.")
     # En producción (Vercel), esto debería detener la aplicación o manejarlo
@@ -39,7 +41,7 @@ if not REDIS_URL:
 
 try:
     # Crear cliente Redis desde la URL. decode_responses=True es útil.
-    redis_client = redis.Redis.from_url(REDIS_URL, decode_responses=True)
+    redis_client = redis.Redis(host=REDIS_URL, port=REDIS_PORT, password=REDIS_KEY, SSL=True)
     redis_client.ping() # Prueba la conexión al iniciar
     logger.info("Conectado a Redis correctamente.")
 except redis.exceptions.ConnectionError as e:
