@@ -29,6 +29,7 @@ else:
 
 GEMINI_MODEL_NAME = "gemini-2.0-flash" # Use a valid model
 
+GEMINI_ERROR_MARKER = "ERROR_PROCESSING_GEMINI" # Marcador para errores
 results_store: Dict[str, str] = {}
 processing_status: Dict[str, bool] = {}
 
@@ -73,28 +74,40 @@ async def generate_gemini_response(submission_id: str, prompt: str):
     try:
         model = genai.GenerativeModel(GEMINI_MODEL_NAME)
         response = await model.generate_content_async(prompt)
-        if response and hasattr(response, 'text'):
+        result_text = None # Inicializa result_text
+
+        if response and hasattr(response, 'text') and response.text:
              result_text = response.text
              logger.info(f"[{submission_id}] Respuesta de Gemini recibida - {prompt} ----> {result_text}.")
-             results_store[submission_id] = result_text
         elif response and hasattr(response, 'parts'):
              result_text = "".join(part.text for part in response.parts if hasattr(part, 'text'))
              if result_text:
                 logger.info(f"[{submission_id}] Respuesta de Gemini recibida (desde parts).")
-                results_store[submission_id] = result_text
              else:
                  logger.warning(f"[{submission_id}] Respuesta de Gemini recibida pero sin contenido de texto en 'parts'. Respuesta: {response}")
-                 results_store[submission_id] = "Error: Gemini devolvió una respuesta vacía o inesperada."
+                 result_text = None # Asegura que no se guarde si está vacío
         else:
             logger.warning(f"[{submission_id}] Respuesta de Gemini recibida pero sin contenido de texto. Respuesta: {response}")
-            results_store[submission_id] = "Error: Gemini devolvió una respuesta vacía o inesperada."
+
+        if result_text:
+            results_store[submission_id] = result_text
+            logger.info(f"[{submission_id}] Resultado guardado correctamente.")
+        else:
+             # Si no hubo texto válido, márcalo como error
+             results_store[submission_id] = GEMINI_ERROR_MARKER
+             logger.warning(f"[{submission_id}] No se obtuvo texto v\u00E1lido de Gemini. Marcado como error.")
+
+        # Elimina de processing SOLO si tuvimos éxito o marcamos error aquí
+        processing_status.pop(submission_id, None)
 
     except Exception as e:
         logger.error(f"[{submission_id}] Error llamando a la API de Gemini: {e}")
-        results_store[submission_id] = f"Error al procesar con Gemini: {e}"
-    finally:
+        # Guarda el marcador de error en caso de excepción
+        results_store[submission_id] = GEMINI_ERROR_MARKER
+        # Elimina de processing DESPUÉS de marcar el error
         processing_status.pop(submission_id, None)
-    logger.info(f"[{submission_id}] 97 - Respuesta generada {results_store[submission_id]}")
+    # NO hay bloque finally aquí para pop
+    logger.info(f"[{submission_id}] Procesamiento de Gemini finalizado. Estado guardado: {results_store.get(submission_id)}")
     
 # --- Endpoints FastAPI ---
 
@@ -152,35 +165,37 @@ async def handle_tally_webhook(payload: TallyWebhookPayload, background_tasks: B
 @app.get("/results/{submission_id}", response_class=HTMLResponse)
 async def get_results_page(request: Request, submission_id: str):
     """
-    Muestra la página HTML con el resultado de Gemini si está listo,
-    o un mensaje de "procesando".
+    Muestra la página HTML con el resultado, mensaje de procesando,
+    mensaje de error, o mensaje de no encontrado.
     """
-    # await asyncio.sleep(10)
-    # ... (keep your existing get_results_page implementation) ...
-    result = results_store.get(submission_id)
-    logger.info(f"[{submission_id}] 160-Solicitud GET recibida para la página de resultados - {result}")    
+    result_value = results_store.get(submission_id)
     is_processing = submission_id in processing_status
-    was_processed = submission_id in results_store # Check if it *ever* existed in results
+    status = ""
+    status_code = 200 # Default status code
+
+    if is_processing:
+        status = "processing"
+        logger.info(f"[{submission_id}] A\u00FAn procesando.")
+    elif result_value == GEMINI_ERROR_MARKER:
+        status = "error"
+        logger.warning(f"[{submission_id}] Se encontr\u00F3 un marcador de error.")
+    elif result_value is not None: # Existe y no es el marcador de error
+        status = "success"
+        logger.info(f"[{submission_id}] Resultado encontrado con \u00E9xito.")
+    else: # No está procesando, no hay resultado ni error guardado
+        status = "not_found"
+        status_code = 404 # Not Found
+        logger.warning(f"[{submission_id}] No se encontr\u00F3 resultado ni est\u00E1 en proceso (not_found).")
 
     context = {
         "request": request,
         "submission_id": submission_id,
-        "result": result,
-        "processing": is_processing,
-         # Add a flag to know if it was not found vs still processing
-        "not_found": not is_processing and not was_processed
+        "result": result_value if status == "success" else None, # Solo pasa el resultado si es exitoso
+        "status": status # Pasa el estado determinado
     }
 
-    if result:
-        logger.info(f"[{submission_id}] Resultado encontrado. Mostrando página.")
-        return templates.TemplateResponse("results.html", context)
-    elif is_processing:
-         logger.info(f"[{submission_id}] Aún procesando. Mostrando mensaje de espera.")
-         return templates.TemplateResponse("results.html", context)
-    else:
-        logger.warning(f"[{submission_id}] No se encontró resultado ni está en proceso - {was_processed}")
-        # Return 404 status code while still rendering the page with a message
-        return templates.TemplateResponse("results.html", context, status_code=404)
+    return templates.TemplateResponse("results.html", context, status_code=status_code)
+
 
 
 @app.get("/")

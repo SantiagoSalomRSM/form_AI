@@ -8,28 +8,36 @@
         body { font-family: sans-serif; padding: 20px; }
         .result-box { margin-top: 20px; padding: 15px; border: 1px solid #ccc; border-radius: 5px; background-color: #f9f9f9; }
         .processing { color: #888; font-style: italic; }
+        .error { color: #c00; border-color: #c00; background-color: #fee; } /* Estilo para errores */
+        .not-found { color: #555; } /* Estilo para no encontrado */
     </style>
 </head>
 <body>
     <h1>Resultado Generado</h1>
 
-    {% if result %}
+    {% if status == "success" %}
         <div class="result-box">
             <p><strong>Respuesta de Gemini:</strong></p>
-            <!-- Usamos safe si confiamos en que Gemini no inyecta HTML malicioso,
-                 o escapamos el HTML si no estamos seguros. Por simplicidad aquí usamos <pre>
-                 que respeta espacios y saltos de línea y es más seguro. -->
-            <pre>{{ result }}</pre>
-        </div>
-    {% elif processing %}
-         <div class="result-box processing">
+            <pre>{{ result }}</pre> </div>
+    {% elif status == "processing" %}
+        <div class="result-box processing">
             <p>Tu resultado se está procesando...</p>
             <p>Por favor, espera unos segundos y <strong>refresca esta página</strong> manualmente.</p>
-         </div>
+        </div>
+    {% elif status == "error" %}
+        <div class="result-box error">
+            <p><strong>Ocurrió un error</strong> al procesar tu solicitud con Gemini.</p>
+            <p>ID de Envío: {{ submission_id }}</p>
+            <p>Por favor, inténtalo de nuevo o contacta al administrador si el problema persiste.</p>
+        </div>
+    {% elif status == "not_found" %}
+        <div class="result-box not-found">
+            <p>No se encontró ningún resultado o proceso para el ID de envío proporcionado.</p>
+            <p>ID de Envío: {{ submission_id }}</p>
+        </div>
     {% else %}
-         <div class="result-box processing">
-             <p>No se encontró un resultado para este envío o hubo un error.</p>
-             <p>ID de Envío: {{ submission_id }}</p>
+         <div class="result-box">
+             <p>Estado desconocido para el ID: {{ submission_id }}</p>
          </div>
     {% endif %}
 
