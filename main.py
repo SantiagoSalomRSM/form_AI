@@ -41,7 +41,7 @@ if not REDIS_URL:
 
 try:
     # Crear cliente Redis desde la URL. decode_responses=True es útil.
-    redis_client = redis.Redis(host=REDIS_URL, port=REDIS_PORT, password=REDIS_KEY, SSL=True)
+    redis_client = redis.Redis(host=REDIS_URL, port=REDIS_PORT, password=REDIS_KEY, ssl=True)
     redis_client.ping() # Prueba la conexión al iniciar
     logger.info("Conectado a Redis correctamente.")
 except redis.exceptions.ConnectionError as e:
