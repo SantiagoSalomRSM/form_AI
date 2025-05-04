@@ -197,7 +197,6 @@ async def get_results_page(request: Request, submission_id: str):
     return templates.TemplateResponse("results.html", context, status_code=status_code)
 
 
-
 @app.get("/")
 async def root():
     """Endpoint raíz simple para verificar que la app funciona."""
