@@ -42,7 +42,9 @@ if not REDIS_URL:
 try:
     # Crear cliente Redis desde la URL. decode_responses=True es útil.
     redis_client = redis.Redis(host=REDIS_URL, port=REDIS_PORT, password=REDIS_KEY, ssl=True, decode_responses=True,max_connections=20)
+    logger.error(f"linea 44 pasada")    #chivato
     redis_client.ping() # Prueba la conexión al iniciar
+    logger.error(f"linea 46 pasada")    #chivato
     logger.info("Conectado a Redis correctamente.")
 except redis.exceptions.ConnectionError as e:
     logger.error(f"CRITICAL: Error conectando a Redis: {e}")
@@ -265,9 +267,17 @@ async def get_results_page(request: Request, submission_id: str):
             "error_message": error_message if final_status == STATUS_ERROR else None,
             "status": final_status # Pasar el estado final a la plantilla
         }
-
+        logger.info(f"linea 270 - [{submission_id}] - request: {request}") #chivato
+        logger.info(f"linea 271 - [{submission_id}] - submission_id: {submission_id}") #chivato
+        logger.info(f"linea 272 - [{submission_id}] - result: {result_value}") #chivato
+        logger.info(f"linea 273 - [{submission_id}] - error_message: {error_message}") #chivato 
+        logger.info(f"linea 274 - [{submission_id}] - status: {final_status}") #chivato
+        logger.info(f"linea 275 - [{submission_id}] - status_code: {http_status_code}") #chivato
+               
         return templates.TemplateResponse("results.html", context, status_code=http_status_code)
+    
 
+        
     except redis.exceptions.RedisError as e:
         logger.error(f"[{submission_id}] Error de Redis en GET /results: {e}")
         # Error crítico al intentar leer de Redis
