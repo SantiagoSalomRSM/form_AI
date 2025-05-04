@@ -225,6 +225,10 @@ async def get_results_page(request: Request, submission_id: str):
 
     try:
         # Obtener el estado en Redis
+        
+        key_exists_status = redis_client.exists(status_key)
+        logger.info(f"[{submission_id}] Resultado de redis_client.exists('{status_key}'): {key_exists_status}") # Esperamos 1
+        
         redis_status = redis_client.get(status_key)
         logger.info(f"[{submission_id}] Estado en Redis: {redis_status}).")
 
