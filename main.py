@@ -42,9 +42,7 @@ if not REDIS_URL:
 try:
     # Crear cliente Redis desde la URL. decode_responses=True es útil.
     redis_client = redis.Redis(host=REDIS_URL, port=REDIS_PORT, password=REDIS_KEY, ssl=True, decode_responses=True,max_connections=20)
-    logger.error(f"linea 44 pasada")    #chivato
     redis_client.ping() # Prueba la conexión al iniciar
-    logger.error(f"linea 46 pasada")    #chivato
     logger.info("Conectado a Redis correctamente.")
 except redis.exceptions.ConnectionError as e:
     logger.error(f"CRITICAL: Error conectando a Redis: {e}")
@@ -151,7 +149,7 @@ async def generate_gemini_response(submission_id: str, prompt: str):
 @app.post("/webhook")
 async def handle_tally_webhook(payload: TallyWebhookPayload, background_tasks: BackgroundTasks):
     # ... (keep your existing webhook handler) ...
-    submission_id = payload.eventId
+    submission_id = payload.submissionId
     status_key = f"status:{submission_id}"
     logger.info(f"[{submission_id}] Webhook recibido. Verificando Redis (Key: {status_key}).")
 
