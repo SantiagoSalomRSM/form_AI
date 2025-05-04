@@ -149,7 +149,7 @@ async def generate_gemini_response(submission_id: str, prompt: str):
 @app.post("/webhook")
 async def handle_tally_webhook(payload: TallyWebhookPayload, background_tasks: BackgroundTasks):
     # ... (keep your existing webhook handler) ...
-    submission_id = payload.submissionId
+    submission_id = payload.data.submissionId
     status_key = f"status:{submission_id}"
     logger.info(f"[{submission_id}] Webhook recibido. Verificando Redis (Key: {status_key}).")
 
