@@ -8,18 +8,308 @@ from typing import List, Optional, Dict, Any
 import google.generativeai as genai
 from dotenv import load_dotenv
 import asyncio # Para ejecutar tareas en segundo plano
-import time
-import redis 
+import time 
 from supabase import create_client, Client
 
-
+# --- Configuración Inicial ---
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 load_dotenv()
-url: str = os.getenv("SUPABASE_URL")
-key: str = os.getenv("SUPABASE_KEY")
-supabase: Client = create_client(url, key)
 
-data = (supabase.table("database_prueba").insert({"id": 1, "name": "Alex", "age": 24}).execute())
+# --- Configuración Gemini
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+if not GEMINI_API_KEY:
+    logger.error("Error: La variable de entorno GEMINI_API_KEY no está configurada.")
+else:
+    try:
+        genai.configure(api_key=GEMINI_API_KEY)
+        logger.info("Cliente de Gemini configurado correctamente.")
+    except Exception as e:
+        logger.error(f"Error configurando el cliente de Gemini: {e}")
 
-# Assert we pulled real data.
-assert len(data.data) > 0
+GEMINI_MODEL_NAME = "gemini-2.0-flash" # Use a valid model
+
+# --- Configuración Supabase ---
+SUPABASE_URL: str = os.getenv("SUPABASE_URL")
+SUPABASE_KEY: str = os.getenv("SUPABASE_KEY")
+
+if not SUPABASE_URL:
+    logger.error("CRITICAL: La variable de entorno SUPABASE_URL no está configurada.")
+    raise ValueError("SUPABASE_URL environment variable is not set.")
+
+try:
+    # Crear cliente Supabase desde la URL. 
+    supabase_client: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+    supabase_client.ping() # Prueba la conexión al iniciar
+    logger.info("Conectado a Supabase correctamente.")
+except Exception as e:
+    logger.error(f"CRITICAL: Error conectando a Supabase: {e}")
+    raise ConnectionError(f"No se pudo conectar a Supabase: {e}") from e
+
+# --- Constantes de Estado y TTL ---
+STATUS_PROCESSING = "processing"
+STATUS_SUCCESS = "success"
+STATUS_ERROR = "error"
+STATUS_NOT_FOUND = "not_found" # Estado implícito si no existe la key
+GEMINI_ERROR_MARKER = "ERROR_PROCESSING_GEMINI" # Marcador en el resultado
+
+# --- App FastAPI ---
+app = FastAPI(title="Tally Webhook Processor")
+templates = Jinja2Templates(directory="templates")
+
+# --- Modelos Pydantic ---
+# ... (keep your existing Pydantic models) ...
+class TallyOption(BaseModel):
+    id: str
+    text: str
+    
+class TallyField(BaseModel):
+    key: str
+    label: Optional[str]
+    value: Any
+    type: str
+    options: Optional[List[TallyOption]] = None
+
+class TallyResponseData(BaseModel):
+    responseId: str
+    submissionId: str
+    fields: List[TallyField]
+
+class TallyWebhookPayload(BaseModel):
+    eventId: str
+    eventType: str
+    data: TallyResponseData
+
+# Placeholder model for PUT data (adjust as needed)
+class UpdateResultPayload(BaseModel):
+    new_result: str
+    reason: Optional[str] = None
+
+
+# --- Lógica para interactuar con Gemini ---
+async def generate_gemini_response(submission_id: str, prompt: str):
+    """Genera una respuesta de Gemini y actualiza Supabase con el resultado."""
+    logger.info(f"[{submission_id}] Iniciando tarea Gemini.")
+    
+    try:
+        # --- Llamada a Gemini API (lógica sin cambios) ---
+        model = genai.GenerativeModel(GEMINI_MODEL_NAME)
+        response = await model.generate_content_async(prompt)
+        result_text = None # Inicializa result_text
+
+        if response and hasattr(response, 'text') and response.text:
+             result_text = response.text
+             logger.info(f"[{submission_id}] Respuesta de Gemini recibida (text)")
+        elif response and hasattr(response, 'parts'):
+             result_text = "".join(part.text for part in response.parts if hasattr(part, 'text'))
+             if result_text:
+                logger.info(f"[{submission_id}] Respuesta de Gemini recibida (desde parts).")
+             else:
+                 logger.warning(f"[{submission_id}] Respuesta de Gemini (parts) sin texto")
+                 result_text = None # Asegura que no se guarde si está vacío
+        else:
+            logger.warning(f"[{submission_id}] Respuesta Gemini inesperada o sin texto")
+ 
+        # --- Actualizar Redis con el resultado ---
+        if result_text:
+            # Guardar resultado en Supabase
+            try:
+                supabase_client.table("form_AI_DB").insert({
+                    "submission_id": submission_id,
+                    "status": STATUS_SUCCESS,
+                    "result": result_text
+                }).execute()
+                logger.info(f"[{submission_id}] Resultado guardado en Supabase.")
+                logger.info(f"[{submission_id}] Estado '{STATUS_SUCCESS}' y resultado guardados en Supabase.")
+            except Exception as e:
+                logger.error(f"[{submission_id}] Error guardando resultado en Supabase: {e}")
+        else:
+            # Si no hay texto válido, guardar error
+            try:
+                supabase_client.table("form_AI_DB").insert({
+                    "submission_id": submission_id,
+                    "status": STATUS_ERROR,
+                    "result": GEMINI_ERROR_MARKER
+                }).execute()
+                logger.warning(f"[{submission_id}] Estado '{STATUS_ERROR}' y marcador guardados en Supabase (sin texto válido).")
+            except Exception as e:
+                logger.error(f"[{submission_id}] Error guardando marcador de error en Supabase: {e}")
+
+    except Exception as e:
+        logger.error(f"[{submission_id}] Excepción durante procesamiento Gemini: {e}", exc_info=True) # Log con traceback
+        try:
+            # Intenta guardar el estado de error incluso si Gemini falló
+            supabase_client.table("form_AI_DB").insert({
+                "submission_id": submission_id,
+                "status": STATUS_ERROR,
+                "result": f"Error interno: {e}"
+            }).execute()
+            logger.warning(f"[{submission_id}] Estado '{STATUS_ERROR}' guardado en Supabase debido a excepción.")
+        except Exception as e:
+            logger.error(f"[{submission_id}] Error guardando estado de error en Supabase: {e}")
+
+    logger.info(f"[{submission_id}] Tarea Gemini finalizada.")
+    
+# --- Endpoints FastAPI ---
+
+@app.post("/webhook")
+async def handle_tally_webhook(payload: TallyWebhookPayload, background_tasks: BackgroundTasks):
+    # ... (keep your existing webhook handler) ...
+    submission_id = payload.data.submissionId
+    status_key = f"status:{submission_id}"
+    logger.info(f"[{submission_id}] Webhook recibido. Verificando Redis (Key: {status_key}).")
+
+    try:
+        # Verificar si ya existe un estado final (success o error) o si aún está procesando
+        # Usamos SET con NX (Not Exists) y GET para hacerlo atómico y evitar race conditions
+        # set(key, value, nx=True) -> True si la key se creó, False si ya existía
+        if not redis_client.set(status_key, STATUS_PROCESSING, nx=True, ex=REDIS_TTL_SECONDS):
+            # La key ya existía. Comprobar qué estado tiene.
+            current_status = redis_client.get(status_key)
+            if current_status == STATUS_PROCESSING:
+                logger.warning(f"[{submission_id}] Webhook ignorado: ya está en estado '{STATUS_PROCESSING}'.")
+                return {"status": "ok", "message": "Already processing"}
+            else: # Ya tiene un estado final (success/error)
+                 logger.warning(f"[{submission_id}] Webhook ignorado: ya tiene estado final '{current_status}'.")
+                 return {"status": "ok", "message": f"Already processed with status: {current_status}"}
+
+        # Si llegamos aquí, redis_client.set tuvo éxito (nx=True), la key se creó y se puso en 'processing'
+        logger.info(f"[{submission_id}] Estado '{STATUS_PROCESSING}' establecido en Redis.")
+
+        # --- Generación del Prompt (sin cambios) ---
+        prompt_parts = ["Analiza la siguiente respuesta de encuesta y proporciona un resumen o conclusión:\n\n"]
+  
+# -------------------------------------------------
+         # ... ( lógica para construir el prompt con payload.data.fields) ... 
+        for field in payload.data.fields:
+            label = field.label
+            label_str = "null" if label is None else str(label).strip()
+            value = field.value
+            value_str = ""
+            if isinstance(value, list):
+                try:
+                    value_str = f'"{",".join(map(str, value))}"'
+                except Exception as e:
+                    logger.error(f"[{submission_id}] Error convirtiendo lista a string: {e}")
+                    value_str = "[Error procesando lista]"
+            elif value is None:
+                value_str = "null"
+            else:
+                value_str = str(value)
+            prompt_parts.append(f"Pregunta: {label_str} - Respuesta: {value_str}")
+# -------------------------------------------------
+        full_prompt = "".join(prompt_parts)
+        logger.debug(f"[{submission_id}] Prompt para Gemini: {full_prompt[:200]}...")
+ 
+    # --- Iniciar Tarea en Segundo Plano ---
+        background_tasks.add_task(generate_gemini_response, submission_id, full_prompt)
+        logger.info(f"[{submission_id}] Tarea de Gemini iniciada en segundo plano.")
+
+        return {"status": "ok", "message": "Processing started"}
+
+    except redis.exceptions.RedisError as e:
+        logger.error(f"[{submission_id}] Error de Redis en webhook: {e}")
+        # Devolver error 500 si Redis falla aquí es crítico
+        raise HTTPException(status_code=500, detail="Internal server error (Redis operation failed)")
+    except Exception as e:
+        logger.error(f"[{submission_id}] Error inesperado en webhook: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
+# --- GET METHOD (Defined AFTER the PUT for the same path) ---
+@app.get("/results/{submission_id}", response_class=HTMLResponse)
+async def get_results_page(request: Request, submission_id: str):
+
+    final_status = STATUS_NOT_FOUND # Estado por defecto si no encontramos la key de estado
+    result_value = None
+    error_message = None
+    http_status_code = 404 # Por defecto es Not Found
+
+    status_key = f"status:{submission_id}"
+    result_key = f"result:{submission_id}"
+    logger.info(f"[{submission_id}] GET /results. Consultando Redis (Keys: {status_key}, {result_key}).")
+
+    try:
+        # Obtener el estado en Redis
+        
+        key_exists_status = redis_client.exists(status_key)
+        logger.info(f"[{submission_id}] Resultado de redis_client.exists('{status_key}'): {key_exists_status}") # Esperamos 1
+        
+        redis_status = redis_client.get(status_key)
+        logger.info(f"[{submission_id}] Estado en Redis: {redis_status}).")
+
+
+        if redis_status == STATUS_PROCESSING:
+            final_status = STATUS_PROCESSING
+            http_status_code = 200 # Página encontrada, pero está procesando
+            logger.info(f"[{submission_id}] Estado Redis: {STATUS_PROCESSING}")
+        elif redis_status == STATUS_SUCCESS:
+            final_status = STATUS_SUCCESS
+            http_status_code = 200
+            result_value = redis_client.get(result_key)
+            logger.info(f"[{submission_id}] Estado Redis: {STATUS_SUCCESS}. Resultado obtenido.")
+            if result_value is None:
+                # Puede pasar si la key de resultado expiró antes que la de estado (poco probable con mismo TTL)
+                logger.error(f"[{submission_id}] INCONSISTENCIA: Estado es '{STATUS_SUCCESS}' pero falta resultado en {result_key}")
+                final_status = STATUS_ERROR
+                error_message = "Error: Resultado no encontrado a pesar de estado exitoso."
+        elif redis_status == STATUS_ERROR:
+            final_status = STATUS_ERROR
+            http_status_code = 200 # Mostramos la página de error normalmente
+            error_message = redis_client.get(result_key) # Obtenemos el mensaje/marcador de error
+            logger.warning(f"[{submission_id}] Estado Redis: {STATUS_ERROR}. Mensaje/marcador: {error_message}")
+        elif redis_status is None:
+            # La key de estado no existe, por lo tanto "not found"
+            final_status = STATUS_NOT_FOUND
+            http_status_code = 404
+            logger.warning(f"[{submission_id}] No se encontró estado en Redis (key: {status_key}).")
+        else:
+            # Estado inesperado guardado en Redis
+            final_status = STATUS_ERROR
+            http_status_code = 500 # Error interno porque el estado es inválido
+            error_message = f"Error interno: Estado inválido '{redis_status}' encontrado en Redis."
+            logger.error(f"[{submission_id}] {error_message}")
+
+        # Contexto para la plantilla
+        context = {
+            "request": request,
+            "submission_id": submission_id,
+            "result": result_value if final_status == STATUS_SUCCESS else None,
+            "error_message": error_message if final_status == STATUS_ERROR else None,
+            "status": final_status # Pasar el estado final a la plantilla
+        }
+        logger.info(f"linea 270 - [{submission_id}] - request: {request}") #chivato
+        logger.info(f"linea 271 - [{submission_id}] - submission_id: {submission_id}") #chivato
+        logger.info(f"linea 272 - [{submission_id}] - result: {result_value}") #chivato
+        logger.info(f"linea 273 - [{submission_id}] - error_message: {error_message}") #chivato 
+        logger.info(f"linea 274 - [{submission_id}] - status: {final_status}") #chivato
+        logger.info(f"linea 275 - [{submission_id}] - status_code: {http_status_code}") #chivato
+               
+        return templates.TemplateResponse("results.html", context, status_code=http_status_code)
+    
+
+        
+    except redis.exceptions.RedisError as e:
+        logger.error(f"[{submission_id}] Error de Redis en GET /results: {e}")
+        # Error crítico al intentar leer de Redis
+        context = {"request": request, "submission_id": submission_id, "status": "critical_error", "error_message": "Error de comunicación con la base de datos de estado."}
+        # Devolver 503 Service Unavailable podría ser apropiado
+        return templates.TemplateResponse("results.html", context, status_code=503)
+    except Exception as e:
+         logger.error(f"[{submission_id}] Error inesperado en GET /results: {e}", exc_info=True)
+         context = {"request": request, "submission_id": submission_id, "status": "critical_error", "error_message": "Error interno del servidor."}
+         return templates.TemplateResponse("results.html", context, status_code=500)
+
+
+
+@app.get("/")
+async def root():
+    """Endpoint raíz simple para verificar que la app funciona."""
+    return {"message": "Hola! Soy el procesador de Tally a Gemini."}
+
+
+# --- Para ejecutar localmente (opcional, Vercel usa su propio método) ---
+# if __name__ == "__main__":
+#     import uvicorn
+#     uvicorn.run(app, host="0.0.0.0", port=8000)
 
