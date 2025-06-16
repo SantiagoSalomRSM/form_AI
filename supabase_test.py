@@ -9,6 +9,7 @@ import google.generativeai as genai
 from dotenv import load_dotenv
 import asyncio # Para ejecutar tareas en segundo plano
 import time 
+import supabase
 from supabase import create_client, Client
 
 # --- Configuración Inicial ---
@@ -110,7 +111,7 @@ async def generate_gemini_response(submission_id: str, prompt: str):
         else:
             logger.warning(f"[{submission_id}] Respuesta Gemini inesperada o sin texto")
  
-        # --- Actualizar Redis con el resultado ---
+        # --- Actualizar Supabase con el resultado ---
         if result_text:
             # Guardar resultado en Supabase
             try:
@@ -156,25 +157,29 @@ async def generate_gemini_response(submission_id: str, prompt: str):
 async def handle_tally_webhook(payload: TallyWebhookPayload, background_tasks: BackgroundTasks):
     # ... (keep your existing webhook handler) ...
     submission_id = payload.data.submissionId
-    status_key = f"status:{submission_id}"
-    logger.info(f"[{submission_id}] Webhook recibido. Verificando Redis (Key: {status_key}).")
+    logger.info(f"[{submission_id}] Webhook recibido. Verificando Supabase (ID: {submission_id}).")
 
     try:
         # Verificar si ya existe un estado final (success o error) o si aún está procesando
         # Usamos SET con NX (Not Exists) y GET para hacerlo atómico y evitar race conditions
         # set(key, value, nx=True) -> True si la key se creó, False si ya existía
-        if not redis_client.set(status_key, STATUS_PROCESSING, nx=True, ex=REDIS_TTL_SECONDS):
-            # La key ya existía. Comprobar qué estado tiene.
-            current_status = redis_client.get(status_key)
-            if current_status == STATUS_PROCESSING:
+        data = supabase_client.table("form_AI_DB").select("*").eq("submission_id", submission_id).execute()
+        if data.data:
+            if data.data['status'] == STATUS_PROCESSING:
                 logger.warning(f"[{submission_id}] Webhook ignorado: ya está en estado '{STATUS_PROCESSING}'.")
                 return {"status": "ok", "message": "Already processing"}
-            else: # Ya tiene un estado final (success/error)
-                 logger.warning(f"[{submission_id}] Webhook ignorado: ya tiene estado final '{current_status}'.")
-                 return {"status": "ok", "message": f"Already processed with status: {current_status}"}
+            else:
+                logger.warning(f"[{submission_id}] Webhook ignorado: ya tiene estado final '{data.data['status']}'.")
+                return {"status": "ok", "message": f"Already processed with status: {data.data['status']}"}
+        
+        supabase_client.table("form_AI_DB").insert({
+                "submission_id": submission_id,
+                "status": STATUS_PROCESSING,
+                "result": None  # Inicialmente no hay resultado"
+            }).execute()
 
-        # Si llegamos aquí, redis_client.set tuvo éxito (nx=True), la key se creó y se puso en 'processing'
-        logger.info(f"[{submission_id}] Estado '{STATUS_PROCESSING}' establecido en Redis.")
+        # Si llegamos aquí, la key se creó y se puso en 'processing'
+        logger.info(f"[{submission_id}] Estado '{STATUS_PROCESSING}' establecido en Supabase.")
 
         # --- Generación del Prompt (sin cambios) ---
         prompt_parts = ["Analiza la siguiente respuesta de encuesta y proporciona un resumen o conclusión:\n\n"]
@@ -207,68 +212,56 @@ async def handle_tally_webhook(payload: TallyWebhookPayload, background_tasks: B
 
         return {"status": "ok", "message": "Processing started"}
 
-    except redis.exceptions.RedisError as e:
-        logger.error(f"[{submission_id}] Error de Redis en webhook: {e}")
-        # Devolver error 500 si Redis falla aquí es crítico
-        raise HTTPException(status_code=500, detail="Internal server error (Redis operation failed)")
     except Exception as e:
-        logger.error(f"[{submission_id}] Error inesperado en webhook: {e}", exc_info=True)
+        logger.error(f"[{submission_id}] Error procesando webhook: {e}", exc_info=True)
+        # Devolver error 500 si algo falla aquí es crítico
         raise HTTPException(status_code=500, detail="Internal server error")
-
+    
 
 # --- GET METHOD (Defined AFTER the PUT for the same path) ---
 @app.get("/results/{submission_id}", response_class=HTMLResponse)
 async def get_results_page(request: Request, submission_id: str):
 
     final_status = STATUS_NOT_FOUND # Estado por defecto si no encontramos la key de estado
-    result_value = None
+    result_value = False # Indica si hay resultado
     error_message = None
     http_status_code = 404 # Por defecto es Not Found
 
-    status_key = f"status:{submission_id}"
-    result_key = f"result:{submission_id}"
-    logger.info(f"[{submission_id}] GET /results. Consultando Redis (Keys: {status_key}, {result_key}).")
+    logger.info(f"[{submission_id}] GET /results. Consultando Supabase (ID: {submission_id}).")
 
     try:
-        # Obtener el estado en Redis
-        
-        key_exists_status = redis_client.exists(status_key)
-        logger.info(f"[{submission_id}] Resultado de redis_client.exists('{status_key}'): {key_exists_status}") # Esperamos 1
-        
-        redis_status = redis_client.get(status_key)
-        logger.info(f"[{submission_id}] Estado en Redis: {redis_status}).")
+        # Obtener el estado en Supabase
+
+        data = supabase_client.table("form_AI_DB").select("status").eq("submission_id", submission_id).single().execute()
+        supabase_status = data.data['status']
+        logger.info(f"[{submission_id}] Estado en Supabase: {supabase_status}).")
 
 
-        if redis_status == STATUS_PROCESSING:
+        if supabase_status == STATUS_PROCESSING:
             final_status = STATUS_PROCESSING
             http_status_code = 200 # Página encontrada, pero está procesando
-            logger.info(f"[{submission_id}] Estado Redis: {STATUS_PROCESSING}")
-        elif redis_status == STATUS_SUCCESS:
+            logger.info(f"[{submission_id}] Estado Supabase: {STATUS_PROCESSING}")
+        elif supabase_status == STATUS_SUCCESS:
             final_status = STATUS_SUCCESS
             http_status_code = 200
-            result_value = redis_client.get(result_key)
-            logger.info(f"[{submission_id}] Estado Redis: {STATUS_SUCCESS}. Resultado obtenido.")
-            if result_value is None:
-                # Puede pasar si la key de resultado expiró antes que la de estado (poco probable con mismo TTL)
-                logger.error(f"[{submission_id}] INCONSISTENCIA: Estado es '{STATUS_SUCCESS}' pero falta resultado en {result_key}")
-                final_status = STATUS_ERROR
-                error_message = "Error: Resultado no encontrado a pesar de estado exitoso."
-        elif redis_status == STATUS_ERROR:
+            result_value = True
+            logger.info(f"[{submission_id}] Estado Supabase: {STATUS_SUCCESS}. Resultado obtenido.")
+        elif supabase_status == STATUS_ERROR:
             final_status = STATUS_ERROR
             http_status_code = 200 # Mostramos la página de error normalmente
-            error_message = redis_client.get(result_key) # Obtenemos el mensaje/marcador de error
-            logger.warning(f"[{submission_id}] Estado Redis: {STATUS_ERROR}. Mensaje/marcador: {error_message}")
-        elif redis_status is None:
+            error_message = supabase_client.table("form_AI_DB").select("status").eq("submission_id", submission_id).single().execute().data['result'] # Obtenemos el mensaje/marcador de error
+            logger.warning(f"[{submission_id}] Estado Supabase: {STATUS_ERROR}. Mensaje/marcador: {error_message}")
+        elif supabase_status is None:
             # La key de estado no existe, por lo tanto "not found"
             final_status = STATUS_NOT_FOUND
             http_status_code = 404
-            logger.warning(f"[{submission_id}] No se encontró estado en Redis (key: {status_key}).")
+            logger.warning(f"[{submission_id}] No se encontró estado en Supabase (ID: {submission_id}).")
         else:
-            # Estado inesperado guardado en Redis
+            # Estado inesperado guardado en Supabase
             final_status = STATUS_ERROR
-            http_status_code = 500 # Error interno porque el estado es inválido
-            error_message = f"Error interno: Estado inválido '{redis_status}' encontrado en Redis."
-            logger.error(f"[{submission_id}] {error_message}")
+            http_status_code = 500  # Error interno porque el estado es inválido
+            error_message = f"Error interno: Estado inválido '{supabase_status}' encontrado en Supabase."
+            logger.error(f"[{submission_id}] {error_message}")  
 
         # Contexto para la plantilla
         context = {
@@ -287,19 +280,17 @@ async def get_results_page(request: Request, submission_id: str):
                
         return templates.TemplateResponse("results.html", context, status_code=http_status_code)
     
-
-        
-    except redis.exceptions.RedisError as e:
-        logger.error(f"[{submission_id}] Error de Redis en GET /results: {e}")
-        # Error crítico al intentar leer de Redis
+    except supabase.exceptions.SupabaseException as e:
+        logger.error(f"[{submission_id}] Error de Supabase en GET /results: {e}")
+        # Error crítico al intentar leer de Supabase
         context = {"request": request, "submission_id": submission_id, "status": "critical_error", "error_message": "Error de comunicación con la base de datos de estado."}
         # Devolver 503 Service Unavailable podría ser apropiado
         return templates.TemplateResponse("results.html", context, status_code=503)
     except Exception as e:
-         logger.error(f"[{submission_id}] Error inesperado en GET /results: {e}", exc_info=True)
-         context = {"request": request, "submission_id": submission_id, "status": "critical_error", "error_message": "Error interno del servidor."}
-         return templates.TemplateResponse("results.html", context, status_code=500)
-
+        logger.error(f"[{submission_id}] Error inesperado en GET /results: {e}", exc_info=True)
+        # Devolver error 500 si algo falla aquí es crítico
+        context = {"request": request, "submission_id": submission_id, "status": "critical_error", "error_message": "Error interno del servidor."}
+        return templates.TemplateResponse("results.html", context, status_code=500)
 
 
 @app.get("/")
