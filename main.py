@@ -231,7 +231,7 @@ async def get_results_page(request: Request, submission_id: str):
     try:
         # Obtener el estado en Supabase
 
-        data = supabase_client.table("form_AI_DB").select("status").eq("submission_id", submission_id).single().execute()
+        data = supabase_client.table("form_AI_DB").select("status").eq("submission_id", submission_id).execute()
         supabase_status = data.data['status']
         logger.info(f"[{submission_id}] Estado en Supabase: {supabase_status}).")
 
@@ -248,7 +248,7 @@ async def get_results_page(request: Request, submission_id: str):
         elif supabase_status == STATUS_ERROR:
             final_status = STATUS_ERROR
             http_status_code = 200 # Mostramos la página de error normalmente
-            error_message = supabase_client.table("form_AI_DB").select("result").eq("submission_id", submission_id).single().execute() # Obtenemos el mensaje/marcador de error
+            error_message = supabase_client.table("form_AI_DB").select("result").eq("submission_id", submission_id).execute() # Obtenemos el mensaje/marcador de error
             logger.warning(f"[{submission_id}] Estado Supabase: {STATUS_ERROR}. Mensaje/marcador: {error_message}")
         elif supabase_status is None:
             # La key de estado no existe, por lo tanto "not found"
