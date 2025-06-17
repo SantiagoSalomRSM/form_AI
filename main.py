@@ -114,11 +114,11 @@ async def generate_gemini_response(submission_id: str, prompt: str):
         if result_text:
             # Guardar resultado en Supabase
             try:
-                supabase_client.table("form_AI_DB").insert({
+                supabase_client.table("form_AI_DB").update({
                     "submission_id": submission_id,
                     "status": STATUS_SUCCESS,
                     "result": result_text
-                }).execute()
+                }).eq("submission_id", submission_id).execute()
                 logger.info(f"[{submission_id}] Resultado guardado en Supabase.")
                 logger.info(f"[{submission_id}] Estado '{STATUS_SUCCESS}' y resultado guardados en Supabase.")
             except Exception as e:
@@ -126,11 +126,11 @@ async def generate_gemini_response(submission_id: str, prompt: str):
         else:
             # Si no hay texto válido, guardar error
             try:
-                supabase_client.table("form_AI_DB").insert({
+                supabase_client.table("form_AI_DB").update({
                     "submission_id": submission_id,
                     "status": STATUS_ERROR,
                     "result": GEMINI_ERROR_MARKER
-                }).execute()
+                }).eq("submission_id", submission_id).execute()
                 logger.warning(f"[{submission_id}] Estado '{STATUS_ERROR}' y marcador guardados en Supabase (sin texto válido).")
             except Exception as e:
                 logger.error(f"[{submission_id}] Error guardando marcador de error en Supabase: {e}")
@@ -139,11 +139,11 @@ async def generate_gemini_response(submission_id: str, prompt: str):
         logger.error(f"[{submission_id}] Excepción durante procesamiento Gemini: {e}", exc_info=True) # Log con traceback
         try:
             # Intenta guardar el estado de error incluso si Gemini falló
-            supabase_client.table("form_AI_DB").insert({
+            supabase_client.table("form_AI_DB").update({
                 "submission_id": submission_id,
                 "status": STATUS_ERROR,
                 "result": f"Error interno: {e}"
-            }).execute()
+            }).eq("submission_id", submission_id).execute()
             logger.warning(f"[{submission_id}] Estado '{STATUS_ERROR}' guardado en Supabase debido a excepción.")
         except Exception as e:
             logger.error(f"[{submission_id}] Error guardando estado de error en Supabase: {e}")
