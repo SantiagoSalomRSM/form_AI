@@ -174,7 +174,8 @@ async def handle_tally_webhook(payload: TallyWebhookPayload, background_tasks: B
         supabase_client.table("form_AI_DB").insert({
                 "submission_id": submission_id,
                 "status": STATUS_PROCESSING,
-                "result": None  # Inicialmente no hay resultado"
+                "result": None,  # Inicialmente no hay resultado"
+                "user_responses": payload.data.fields
             }).execute()
 
         # Si llegamos aquí, la key se creó y se puso en 'processing'
