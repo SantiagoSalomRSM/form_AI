@@ -121,6 +121,7 @@ async def generate_gemini_response(submission_id: str, prompt: str):
                 }).eq("submission_id", submission_id).execute()
                 logger.info(f"[{submission_id}] Resultado guardado en Supabase.")
                 logger.info(f"[{submission_id}] Estado '{STATUS_SUCCESS}' y resultado guardados en Supabase.")
+                logger.info(f"[{submission_id}] Resultado: {result_text[:100]}...")  # Log solo los primeros 100 caracteres
             except Exception as e:
                 logger.error(f"[{submission_id}] Error guardando resultado en Supabase: {e}")
         else:
