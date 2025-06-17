@@ -231,10 +231,8 @@ async def get_results_page(request: Request, submission_id: str):
     try:
         # Obtener el estado en Supabase
 
-        data = supabase_client.table("form_AI_DB").select("status").eq("submission_id", submission_id).execute()
-        supabase_status = data.data['status']
+        supabase_status = supabase_client.table("form_AI_DB").select("status").eq("submission_id", submission_id).execute()
         logger.info(f"[{submission_id}] Estado en Supabase: {supabase_status}).")
-
 
         if supabase_status == STATUS_PROCESSING:
             final_status = STATUS_PROCESSING
@@ -243,7 +241,7 @@ async def get_results_page(request: Request, submission_id: str):
         elif supabase_status == STATUS_SUCCESS:
             final_status = STATUS_SUCCESS
             http_status_code = 200
-            result_value = True
+            result_value = supabase_client.table("form_AI_DB").select("result").eq("submission_id", submission_id).execute()
             logger.info(f"[{submission_id}] Estado Supabase: {STATUS_SUCCESS}. Resultado obtenido.")
         elif supabase_status == STATUS_ERROR:
             final_status = STATUS_ERROR
