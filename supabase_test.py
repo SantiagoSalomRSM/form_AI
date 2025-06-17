@@ -41,7 +41,6 @@ if not SUPABASE_URL:
 try:
     # Crear cliente Supabase desde la URL. 
     supabase_client: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
-    supabase_client.ping() # Prueba la conexión al iniciar
     logger.info("Conectado a Supabase correctamente.")
 except Exception as e:
     logger.error(f"CRITICAL: Error conectando a Supabase: {e}")
