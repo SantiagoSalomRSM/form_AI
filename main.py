@@ -11,6 +11,7 @@ import asyncio # Para ejecutar tareas en segundo plano
 import time 
 import supabase
 from supabase import create_client, Client
+import json
 
 # --- Configuración Inicial ---
 logging.basicConfig(level=logging.INFO)
@@ -175,7 +176,7 @@ async def handle_tally_webhook(payload: TallyWebhookPayload, background_tasks: B
                 "submission_id": submission_id,
                 "status": STATUS_PROCESSING,
                 "result": None,  # Inicialmente no hay resultado"
-                "user_responses": payload.data.fields
+                "user_responses": json.dumps([field.dict() for field in payload.data.fields])
             }).execute()
 
         # Si llegamos aquí, la key se creó y se puso en 'processing'
