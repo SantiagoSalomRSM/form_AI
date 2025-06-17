@@ -279,12 +279,6 @@ async def get_results_page(request: Request, submission_id: str):
                
         return templates.TemplateResponse("results.html", context, status_code=http_status_code)
     
-    except supabase.exceptions.SupabaseException as e:
-        logger.error(f"[{submission_id}] Error de Supabase en GET /results: {e}")
-        # Error crítico al intentar leer de Supabase
-        context = {"request": request, "submission_id": submission_id, "status": "critical_error", "error_message": "Error de comunicación con la base de datos de estado."}
-        # Devolver 503 Service Unavailable podría ser apropiado
-        return templates.TemplateResponse("results.html", context, status_code=503)
     except Exception as e:
         logger.error(f"[{submission_id}] Error inesperado en GET /results: {e}", exc_info=True)
         # Devolver error 500 si algo falla aquí es crítico
