@@ -27,6 +27,7 @@ except Exception as e:
 
 # Título y configuración de la página (AÑADIR ICONO RSM, mirar page_icon en la documentación de Streamlit)
 st.set_page_config(page_title="Análisis de Resultados del Formulario")
+st.set_page_config(layout="wide")
 
 st.title("Análisis de Resultados del Formulario")
 st.caption("Esta aplicación muestra los resultados del análisis del formulario obtenidos con la IA Gemini.")
