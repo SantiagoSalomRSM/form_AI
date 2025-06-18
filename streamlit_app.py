@@ -38,7 +38,7 @@ if not submission_id:
     st.warning("Por favor, proporciona un **Submission ID** válido en la URL para ver los resultados.")
     st.stop()
 
-st.info("Buscando resultados para el Submission ID: **{submission_id}**")
+st.info("Buscando resultados para el Submission ID: **" + submission_id + "**")
 
 # Búsqueda de resultados en Supabase
 try:
