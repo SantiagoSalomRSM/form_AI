@@ -56,7 +56,6 @@ try:
 
     # Mostrar el estado del análisis y resultados
     if status == STATUS_PROCESSING:
-        st.subheader("Análisis en progreso...")
         with st.spinner("La IA está procesando los datos..."):
             # Actualizar la pagina periódicamente para ver si el análisis ha finalizado
             time.sleep(5)  # Espera 5 segundos antes de actualizar
@@ -73,8 +72,7 @@ try:
                 st.markdown(user_responses)
 
     elif status == STATUS_ERROR:
-        st.subheader("Un error ocurrió durante el análisis")
-        st.error(f"El nálisis falló con el siguiente mensaje: {result_text}")
+        st.warning(f"El análisis falló con el siguiente mensaje: {result_text}")
     else:
         st.warning(f"Status desconocido: {status}.")
 
