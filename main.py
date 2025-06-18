@@ -176,7 +176,7 @@ async def handle_tally_webhook(payload: TallyWebhookPayload, background_tasks: B
                 "submission_id": submission_id,
                 "status": STATUS_PROCESSING,
                 "result": None,  # Inicialmente no hay resultado"
-                "user_responses": [field for field in payload.data.fields]
+                "user_responses": [{ "key": field.key, "value": field.value } for field in payload.data.fields]
             }).execute()
 
         # Si llegamos aquí, la key se creó y se puso en 'processing'
