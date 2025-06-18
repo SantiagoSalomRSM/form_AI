@@ -72,9 +72,9 @@ try:
                 st.markdown(user_responses)
 
     elif status == STATUS_ERROR:
-        st.warning(f"El análisis falló con el siguiente mensaje: {result_text}")
+        st.error(f"El análisis falló con el siguiente mensaje: {result_text}")
     else:
-        st.warning(f"Status desconocido: {status}.")
+        st.error(f"Status desconocido: {status}.")
 
 except Exception as e:
     st.error(f"Un error ocurrió al buscar los resultados: {e}")
