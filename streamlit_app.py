@@ -43,16 +43,16 @@ st.info("Buscando resultados para el Submission ID: **{submission_id}**")
 # Búsqueda de resultados en Supabase
 try:
     # Busca el registro en la base de datos usando el Submission ID
-    response = supabase_client.table("form_AI_DB").select("*").eq("submission_id", submission_id).execute()
-    data = response.data
+    data = supabase_client.table("form_AI_DB").select("*").eq("submission_id", submission_id).execute()
+    data = data.data
 
     if not data:
         st.error(f"No se encontraron resultados para el Submission ID: **{submission_id}**")
         st.stop()
 
-    status = data.get("status")
-    result_text = data.get("result")
-    user_responses = data.get("user_responses")
+    status = data.data[0]['status'] if data.data else None # Extraer el estado 
+    result_text = data.data[0]['result'] if data.data else None # Extraer el resultado 
+    user_responses = data.data[0].get('user_responses', None) if data.data else None # Extraer las respuestas del usuario
 
     # Mostrar el estado del análisis y resultados
     if status == STATUS_PROCESSING:
