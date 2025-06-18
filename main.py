@@ -103,6 +103,14 @@ def summarize_payload(payload: TallyWebhookPayload) -> str:
         lines.append(f"- {label}: {value_str}")
     return "\n".join(lines)
 
+def detect_form_type(payload: TallyWebhookPayload) -> str:
+    """Detects the form type based on the first field's label or key."""
+    if payload.data.fields:
+        first_label = payload.data.fields[0].label or payload.data.fields[0].key
+        if first_label.strip() == "¿De qué sector es tu empresa o grupo?":
+            return "CFO_Form"
+    return "Unknown"
+
 # --- Lógica para interactuar con Gemini ---
 async def generate_gemini_response(submission_id: str, prompt: str):
     """Genera una respuesta de Gemini y actualiza Supabase con el resultado."""
@@ -189,13 +197,14 @@ async def handle_tally_webhook(payload: TallyWebhookPayload, background_tasks: B
                 logger.warning(f"[{submission_id}] Webhook ignorado: ya tiene estado final '{data.data['status']}'.")
                 return {"status": "ok", "message": f"Already processed with status: {data.data['status']}"}
         
+        form_type = detect_form_type(payload)
         response = summarize_payload(payload)
         supabase_client.table("form_AI_DB").insert({
                 "submission_id": submission_id,
                 "status": STATUS_PROCESSING,
                 "result": None,  # Inicialmente no hay resultado"
                 "user_responses": response,  # Resumen legible del payload
-
+                "form_type": form_type  # Tipo de formulario
             }).execute()
 
         # Si llegamos aquí, la key se creó y se puso en 'processing'
