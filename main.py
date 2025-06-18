@@ -89,7 +89,7 @@ class UpdateResultPayload(BaseModel):
 # Función para generar un resumen legible del payload de Tally
 def summarize_payload(payload: TallyWebhookPayload) -> str:
     """Generates a human-readable summary from the Tally payload."""
-    lines = [f"Submission ID: {payload.data.submissionId}", "", "Fields:"]
+    lines = ["Respuestas:"]
     for field in payload.data.fields:
         label = field.label or field.key
         value = field.value
@@ -174,6 +174,7 @@ async def handle_tally_webhook(payload: TallyWebhookPayload, background_tasks: B
     # ... (keep your existing webhook handler) ...
     submission_id = payload.data.submissionId
     logger.info(f"[{submission_id}] Webhook recibido. Verificando Supabase (ID: {submission_id}).")
+    logger.info(f"[{submission_id}] Event ID: {payload.eventId}, Event Type: {payload.eventType}")
 
     try:
         # Verificar si ya existe un estado final (success o error) o si aún está procesando
