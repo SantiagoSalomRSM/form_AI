@@ -44,7 +44,6 @@ st.info("Buscando resultados para el Submission ID: **" + submission_id + "**")
 try:
     # Busca el registro en la base de datos usando el Submission ID
     data = supabase_client.table("form_AI_DB").select("*").eq("submission_id", submission_id).execute()
-    data = data.data
 
     if not data:
         st.error(f"No se encontraron resultados para el Submission ID: **{submission_id}**")
