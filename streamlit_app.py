@@ -62,10 +62,10 @@ try:
             st.rerun()  # Vuelve a ejecutar la aplicación 
     elif status == STATUS_SUCCESS:
         st.balloons() # Celebrar
-        st.subheader("Análisis Completado")
+        st.success("Análisis Completado")
         
         st.markdown("### Análisis del Formulario")
-        st.success(result_text) # Muestra el resultado del análisis
+        st.markdown(result_text) # Muestra el resultado del análisis
 
         if user_responses:
             with st.expander("Mostrar respuestas del usuario"):
