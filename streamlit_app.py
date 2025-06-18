@@ -4,8 +4,8 @@ import os
 import time
 
 # --- Configuración Supabase ---
-SUPABASE_URL: str = os.getenv("SUPABASE_URL")
-SUPABASE_KEY: str = os.getenv("SUPABASE_KEY")
+SUPABASE_URL = st.secrets.get("SUPABASE_URL") 
+SUPABASE_KEY = st.secrets.get("SUPABASE_KEY")
 
 # --- Constantes de estado ---
 STATUS_PROCESSING = "processing"
