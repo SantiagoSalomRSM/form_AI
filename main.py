@@ -176,7 +176,7 @@ async def handle_tally_webhook(payload: TallyWebhookPayload, background_tasks: B
                 "submission_id": submission_id,
                 "status": STATUS_PROCESSING,
                 "result": None,  # Inicialmente no hay resultado"
-                "user_responses": payload.data.fields
+                "user_responses": payload.dict()  # Guarda el payload como JSON
             }).execute()
 
         # Si llegamos aquí, la key se creó y se puso en 'processing'
