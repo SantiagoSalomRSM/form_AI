@@ -86,6 +86,22 @@ class UpdateResultPayload(BaseModel):
     new_result: str
     reason: Optional[str] = None
 
+# Función para generar un resumen legible del payload de Tally
+def summarize_payload(payload: TallyWebhookPayload) -> str:
+    """Generates a human-readable summary from the Tally payload."""
+    lines = [f"Submission ID: {payload.data.submissionId}", "", "Fields:"]
+    for field in payload.data.fields:
+        label = field.label or field.key
+        value = field.value
+        # If value is a list and options exist, map IDs to text
+        if isinstance(value, list) and field.options:
+            id_to_text = {opt.id: opt.text for opt in field.options}
+            value_texts = [id_to_text.get(v, v) for v in value]
+            value_str = ", ".join(value_texts)
+        else:
+            value_str = str(value)
+        lines.append(f"- {label}: {value_str}")
+    return "\n".join(lines)
 
 # --- Lógica para interactuar con Gemini ---
 async def generate_gemini_response(submission_id: str, prompt: str):
@@ -172,11 +188,13 @@ async def handle_tally_webhook(payload: TallyWebhookPayload, background_tasks: B
                 logger.warning(f"[{submission_id}] Webhook ignorado: ya tiene estado final '{data.data['status']}'.")
                 return {"status": "ok", "message": f"Already processed with status: {data.data['status']}"}
         
+        response = summarize_payload(payload)
         supabase_client.table("form_AI_DB").insert({
                 "submission_id": submission_id,
                 "status": STATUS_PROCESSING,
                 "result": None,  # Inicialmente no hay resultado"
-                "user_responses": payload.dict()  # Guarda el payload como JSON
+                "user_responses": response,  # Resumen legible del payload
+
             }).execute()
 
         # Si llegamos aquí, la key se creó y se puso en 'processing'
