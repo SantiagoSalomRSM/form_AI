@@ -69,7 +69,7 @@ try:
 
         if user_responses:
             with st.expander("Mostrar respuestas del usuario"):
-                st.json(user_responses) # Muestra las respuestas originales del usuario
+                st.markdown(user_responses)
 
     elif status == STATUS_ERROR:
         st.subheader("Un error ocurrió durante el análisis")
