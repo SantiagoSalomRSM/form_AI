@@ -88,12 +88,12 @@ class UpdateResultPayload(BaseModel):
 
 # Función para generar un resumen legible del payload de Tally
 def summarize_payload(payload: TallyWebhookPayload) -> str:
-    """Generates a human-readable summary from the Tally payload."""
+    """Genera un resumen entendible del Tally payload."""
     lines = ["Respuestas:"]
     for field in payload.data.fields:
         label = field.label or field.key
         value = field.value
-        # If value is a list and options exist, map IDs to text
+        # Si el valor es una lista y tiene opciones, mapeamos los IDs a texto
         if isinstance(value, list) and field.options:
             id_to_text = {opt.id: opt.text for opt in field.options}
             value_texts = [id_to_text.get(v, v) for v in value]
@@ -104,12 +104,46 @@ def summarize_payload(payload: TallyWebhookPayload) -> str:
     return "\n".join(lines)
 
 def detect_form_type(payload: TallyWebhookPayload) -> str:
-    """Detects the form type based on the first field's label or key."""
+    """Detecta el form type basándose en la primera label o key."""
     if payload.data.fields:
         first_label = payload.data.fields[0].label or payload.data.fields[0].key
         if first_label.strip() == "¿De qué sector es tu empresa o grupo?":
             return "CFO_Form"
     return "Unknown"
+
+def generate_prompt(payload: TallyWebhookPayload, submission_id: str, form_type: str) -> str:
+    """Genera un prompt para Gemini basado en el tipo de formulario."""
+    if form_type == "CFO_Form":
+        logger.info(f"[{submission_id}] Formulario CFO detectado. Procesando respuestas.")
+
+        # --- Generación del Prompt (sin cambios) ---
+        prompt_parts = ["Analiza la siguiente respuesta de encuesta y proporciona un resumen o conclusión:\n\n"]
+
+        # ... ( lógica para construir el prompt con payload.data.fields) ... 
+        for field in payload.data.fields:
+            label = field.label
+            label_str = "null" if label is None else str(label).strip()
+            value = field.value
+            value_str = ""
+            if isinstance(value, list):
+                try:
+                    value_str = f'"{",".join(map(str, value))}"'
+                except Exception as e:
+                    logger.error(f"[{submission_id}] Error convirtiendo lista a string: {e}")
+                    value_str = "[Error procesando lista]"
+            elif value is None:
+                value_str = "null"
+            else:
+                value_str = str(value)
+            prompt_parts.append(f"Pregunta: {label_str} - Respuesta: {value_str}")
+    else:
+        logger.info(f"[{submission_id}] Formulario desconocido o no CFO. Usando respuestas sin procesar.")
+        # Usar las respuestas sin procesar directamente
+        prompt_parts.append(f"Respuestas sin procesar: {json.dumps(payload.data.fields, indent=2)}")
+# -------------------------------------------------
+    full_prompt = "".join(prompt_parts)
+    return full_prompt
+
 
 # --- Lógica para interactuar con Gemini ---
 async def generate_gemini_response(submission_id: str, prompt: str):
@@ -210,29 +244,9 @@ async def handle_tally_webhook(payload: TallyWebhookPayload, background_tasks: B
         # Si llegamos aquí, la key se creó y se puso en 'processing'
         logger.info(f"[{submission_id}] Estado '{STATUS_PROCESSING}' establecido en Supabase.")
 
-        # --- Generación del Prompt (sin cambios) ---
-        prompt_parts = ["Analiza la siguiente respuesta de encuesta y proporciona un resumen o conclusión:\n\n"]
-  
 # -------------------------------------------------
-         # ... ( lógica para construir el prompt con payload.data.fields) ... 
-        for field in payload.data.fields:
-            label = field.label
-            label_str = "null" if label is None else str(label).strip()
-            value = field.value
-            value_str = ""
-            if isinstance(value, list):
-                try:
-                    value_str = f'"{",".join(map(str, value))}"'
-                except Exception as e:
-                    logger.error(f"[{submission_id}] Error convirtiendo lista a string: {e}")
-                    value_str = "[Error procesando lista]"
-            elif value is None:
-                value_str = "null"
-            else:
-                value_str = str(value)
-            prompt_parts.append(f"Pregunta: {label_str} - Respuesta: {value_str}")
-# -------------------------------------------------
-        full_prompt = "".join(prompt_parts)
+        # --- Generación del Prompt modularizada ---
+        full_prompt = generate_prompt(payload, submission_id, form_type)
         logger.debug(f"[{submission_id}] Prompt para Gemini: {full_prompt[:200]}...")
  
     # --- Iniciar Tarea en Segundo Plano ---
