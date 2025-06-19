@@ -30,7 +30,6 @@ st.set_page_config(page_title="Análisis de Resultados del Formulario", layout="
                    page_icon=":bar_chart:")
 
 #st.title("Análisis de Resultados del Formulario")
-#st.caption("Esta aplicación muestra los resultados del análisis del formulario obtenidos con la IA Gemini.")
 
 # Obtener el ID de envío desde los parámetros de la URL 
 submission_id = st.query_params.get("submission_id")
@@ -54,7 +53,7 @@ try:
 
     # Mostrar el estado del análisis y resultados
     if status == STATUS_PROCESSING:
-        progress_text = "⏳ Procesando... Por favor, espera unos segundos."
+        progress_text = "⏳ Procesando respuestas... Por favor, espera unos segundos."
         my_bar = st.progress(0, text=progress_text)
 
         for percent_complete in range(100):
