@@ -39,8 +39,6 @@ if not submission_id:
     st.warning("Por favor, proporciona un **Submission ID** válido en la URL para ver los resultados.")
     st.stop()
 
-st.info("Buscando resultados para el Submission ID: **" + submission_id + "**")
-
 # Búsqueda de resultados en Supabase
 try:
     # Busca el registro en la base de datos usando el Submission ID
@@ -62,7 +60,7 @@ try:
             st.rerun()  # Vuelve a ejecutar la aplicación 
     elif status == STATUS_SUCCESS:
         st.balloons() # Celebrar
-        st.success("Análisis Completado")
+        st.success("Análisis Completado!")
         
         st.markdown("### Análisis del Formulario")
         st.markdown(result_text) # Muestra el resultado del análisis
