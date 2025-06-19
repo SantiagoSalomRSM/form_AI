@@ -29,8 +29,8 @@ except Exception as e:
 st.set_page_config(page_title="Análisis de Resultados del Formulario", layout="wide", 
                    page_icon=":bar_chart:")
 
-st.title("Análisis de Resultados del Formulario")
-st.caption("Esta aplicación muestra los resultados del análisis del formulario obtenidos con la IA Gemini.")
+#st.title("Análisis de Resultados del Formulario")
+#st.caption("Esta aplicación muestra los resultados del análisis del formulario obtenidos con la IA Gemini.")
 
 # Obtener el ID de envío desde los parámetros de la URL 
 submission_id = st.query_params.get("submission_id")
@@ -70,7 +70,7 @@ try:
         #     st.rerun()  # Vuelve a ejecutar la aplicación 
     elif status == STATUS_SUCCESS:
         st.balloons() # Celebrar
-        st.success("Análisis Completado!")
+        #st.success("Análisis Completado!")
         
         st.markdown(result_text) # Muestra el resultado del análisis
 
