@@ -58,8 +58,9 @@ try:
         my_bar = st.progress(0, text=progress_text)
 
         for percent_complete in range(100):
-            time.sleep(0.05)
-            my_bar.progress(percent_complete + 1, text=progress_text)
+            # take 3 seconds to simulate processing
+            time.sleep(0.03)  # Simula el tiempo de procesamiento
+            my_bar.progress(percent_complete, text=progress_text)
         
         my_bar.empty()
         st.rerun()
