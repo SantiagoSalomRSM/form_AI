@@ -118,7 +118,7 @@ def generate_prompt(payload: TallyWebhookPayload, submission_id: str, form_type:
 
         # --- Generación del Prompt (sin cambios) ---
         prompt_parts = ["Analyze the following responses given by a CFO\n", "Give the results in Spanish and in Markdown format\n",
-                        "Dont't make it too long but complete enough\n\n"]
+                        "Dont't make it too long but complete enough\n", "we are a consulting firm, so this should be helpful for us\n\n"]
 
         # ... ( lógica para construir el prompt con payload.data.fields) ... 
         for field in payload.data.fields:
