@@ -119,8 +119,9 @@ def generate_prompt(payload: TallyWebhookPayload, submission_id: str, form_type:
         # --- Generación del Prompt (sin cambios) ---
         prompt_parts = ["Analiza las respuestas de la encuesta con el siguiente formato:\n",
                         "# Análisis Rápido - Departamento Financiero\n",
-                        "### Resumen Ejecutivo: El departamento financiero de esta empresa energética de tamaño x (y345 empleados, z facturación) muestra una mezcla de xx y zz. Destaca... \n",
+                        "Resumen Ejecutivo: El departamento financiero de esta empresa energética de tamaño x (y345 empleados, z facturación) muestra una mezcla de xx y zz. Destaca... \n",
                         "Añade también propuestas, aspectos a mejorar y más comentarios que ayuden a convencer al CFO de contratar nuestros servicios (consultoría)\n",
+                        "Usa un formato consistente para los subapartados (p.ej #### para subtitotulos o negrita)\n",
                         "Importante que no te extiendas demasiado, el CFO quiere un análisis rápido y directo.\n\n"]
 
         # ... ( lógica para construir el prompt con payload.data.fields) ... 
