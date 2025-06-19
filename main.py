@@ -137,9 +137,28 @@ def generate_prompt(payload: TallyWebhookPayload, submission_id: str, form_type:
                 value_str = str(value)
             prompt_parts.append(f"Pregunta: {label_str} - Respuesta: {value_str}")
     else:
-        logger.info(f"[{submission_id}] Formulario desconocido o no CFO. Usando respuestas sin procesar.")
-        # Usar las respuestas sin procesar directamente
-        prompt_parts.append(f"Respuestas sin procesar: {json.dumps(payload.data.fields, indent=2)}")
+        logger.info(f"[{submission_id}] Otro tipo de formulario detectado. Procesando respuestas.")
+
+        # --- Generación del Prompt (sin cambios) ---
+        prompt_parts = ["Analiza la siguiente respuesta de encuesta y proporciona un resumen o conclusión en formato markdown:\n\n"]
+
+        # ... ( lógica para construir el prompt con payload.data.fields) ... 
+        for field in payload.data.fields:
+            label = field.label
+            label_str = "null" if label is None else str(label).strip()
+            value = field.value
+            value_str = ""
+            if isinstance(value, list):
+                try:
+                    value_str = f'"{",".join(map(str, value))}"'
+                except Exception as e:
+                    logger.error(f"[{submission_id}] Error convirtiendo lista a string: {e}")
+                    value_str = "[Error procesando lista]"
+            elif value is None:
+                value_str = "null"
+            else:
+                value_str = str(value)
+            prompt_parts.append(f"Pregunta: {label_str} - Respuesta: {value_str}")
 # -------------------------------------------------
     full_prompt = "".join(prompt_parts)
     return full_prompt
