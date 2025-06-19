@@ -62,7 +62,6 @@ try:
         st.balloons() # Celebrar
         st.success("Análisis Completado!")
         
-        st.markdown("### Análisis del Formulario")
         st.markdown(result_text) # Muestra el resultado del análisis
 
         if user_responses:
