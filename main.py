@@ -117,7 +117,8 @@ def generate_prompt(payload: TallyWebhookPayload, submission_id: str, form_type:
         logger.info(f"[{submission_id}] Formulario CFO detectado. Procesando respuestas.")
 
         # --- Generación del Prompt (sin cambios) ---
-        prompt_parts = ["Analiza la siguiente respuesta de encuesta de un CFO\n", "Proporciona un resumen o conclusión en formato markdown:\n\n"]
+        prompt_parts = ["Analyze the following responses given by a CFO\n", "Give the results in Spanish and in Markdown format\n",
+                        "Dont't make it too long but complete enough\n\n"]
 
         # ... ( lógica para construir el prompt con payload.data.fields) ... 
         for field in payload.data.fields:
