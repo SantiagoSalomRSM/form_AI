@@ -90,7 +90,7 @@ except Exception as e:
 st.markdown(
     """
     <div style='position: fixed; bottom: 30px; left: 0; width: 100%; text-align: center; z-index: 9999;'>
-        <a href="mailto:tuemail@empresa.com?subject=Consulta%20sobre%20el%20an%C3%A1lisis%20de%20formularios" 
+        <a href="mailto:ssalom@rsm.es?subject=Consulta%20sobre%20el%20an%C3%A1lisis%20del%20formulario%20financiero" 
            style="background-color:#0072C6; color:white; padding:12px 30px; border-radius:25px; text-decoration:none; font-size:18px; font-weight:bold; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
             📧 Contactar con RSM
         </a>
