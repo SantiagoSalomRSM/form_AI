@@ -86,6 +86,19 @@ try:
 except Exception as e:
     st.error(f"Un error ocurrió al buscar los resultados: {e}")
 
+# --- Botón de contacto al final ---
+st.markdown(
+    """
+    <div style='position: fixed; bottom: 30px; left: 0; width: 100%; text-align: center; z-index: 9999;'>
+        <a href="mailto:tuemail@empresa.com?subject=Consulta%20sobre%20el%20an%C3%A1lisis%20de%20formularios" 
+           style="background-color:#0072C6; color:white; padding:12px 30px; border-radius:25px; text-decoration:none; font-size:18px; font-weight:bold; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
+            📧 Contactar con RSM
+        </a>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
 hide_streamlit_style = """
     <style>
     #MainMenu {visibility: hidden;}
