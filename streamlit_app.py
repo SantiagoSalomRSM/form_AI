@@ -26,8 +26,8 @@ except Exception as e:
 # --- Streamlit App UI ---
 
 # Título y configuración de la página (AÑADIR ICONO RSM, mirar page_icon en la documentación de Streamlit)
-st.set_page_config(page_title="Análisis de Resultados del Formulario")
-st.set_page_config(layout="wide")
+st.set_page_config(page_title="Análisis de Resultados del Formulario", layout="wide", 
+                   page_icon=":bar_chart:")
 
 st.title("Análisis de Resultados del Formulario")
 st.caption("Esta aplicación muestra los resultados del análisis del formulario obtenidos con la IA Gemini.")
@@ -54,10 +54,19 @@ try:
 
     # Mostrar el estado del análisis y resultados
     if status == STATUS_PROCESSING:
-        with st.spinner("La IA está procesando los datos..."):
-            # Actualizar la pagina periódicamente para ver si el análisis ha finalizado
-            time.sleep(5)  # Espera 5 segundos antes de actualizar
-            st.rerun()  # Vuelve a ejecutar la aplicación 
+        progress_text = "⏳ Procesando... Por favor, espera unos segundos."
+        my_bar = st.progress(0, text=progress_text)
+
+        for percent_complete in range(100):
+            time.sleep(0.05)
+            my_bar.progress(percent_complete + 1, text=progress_text)
+        
+        my_bar.empty()
+        st.rerun()
+        # with st.spinner("La IA está procesando los datos..."):
+        #     # Actualizar la pagina periódicamente para ver si el análisis ha finalizado
+        #     time.sleep(5)  # Espera 5 segundos antes de actualizar
+        #     st.rerun()  # Vuelve a ejecutar la aplicación 
     elif status == STATUS_SUCCESS:
         st.balloons() # Celebrar
         st.success("Análisis Completado!")
@@ -75,3 +84,11 @@ try:
 
 except Exception as e:
     st.error(f"Un error ocurrió al buscar los resultados: {e}")
+
+hide_streamlit_style = """
+    <style>
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    </style>
+"""
+st.markdown(hide_streamlit_style, unsafe_allow_html=True)
