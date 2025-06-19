@@ -117,7 +117,7 @@ def generate_prompt(payload: TallyWebhookPayload, submission_id: str, form_type:
         logger.info(f"[{submission_id}] Formulario CFO detectado. Procesando respuestas.")
 
         # --- Generación del Prompt (sin cambios) ---
-        prompt_parts = ["Analyze the following responses given by a CFO\n", "Give the results in Spanish and in Markdown format (note that im using st.markdown)\n",
+        prompt_parts = ["Analyze the following responses given by a CFO\n", "Give the results in Spanish and in Markdown format (don't write ```markdown at the beginning)\n",
                         "Don't gp over the answers, just extract conclusions (MAKE IT FAST TO READ!\n", "we are a consulting firm, so this should be helpful for us and for the CFO\n",
                         "Show an output that can be seen by the cfo, so make it professional here's you analysis...\n\n"]
 
