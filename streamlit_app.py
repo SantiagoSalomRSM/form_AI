@@ -33,7 +33,7 @@ IMAGE_URL = "https://raw.githubusercontent.com/SantiagoSalomRSM/form_AI/master/i
 
 # Use columns to center the image
 col1, col2, col3 = st.columns([1, 1, 1])
-with col3:
+with col2:
     st.image(
         IMAGE_URL,
         use_container_width=True, 
