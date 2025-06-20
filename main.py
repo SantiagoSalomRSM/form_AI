@@ -155,7 +155,6 @@ def generate_prompt(payload: TallyWebhookPayload, submission_id: str, form_type:
 
                         ### 📞 Hablemos de tu Estrategia
                         Estos son desafíos comunes pero críticos en la ruta del crecimiento, especialmente en el sector bancario. La buena noticia es que tienen solución con el enfoque adecuado.
-
                         Para empezar a diseñar un plan de acción concreto para tu equipo, simplemente pulsa el botón **'Contactar con RSM'** y envíanos un mensaje. Estaremos encantados de analizar los siguientes pasos contigo.
 
                         ## **Datos del Formulario del CFO para Analizar:**"""]
