@@ -31,7 +31,7 @@ st.set_page_config(page_title="Análisis de Resultados del Formulario",
 IMAGE_URL = "https://raw.githubusercontent.com/SantiagoSalomRSM/form_AI/master/images/logo_rsm.jpg" 
 
 # Use columns to center the image
-col1, col2, col3 = st.columns([1, 2, 1])
+col1, col2, col3 = st.columns([1, 1, 1])
 with col3:
     st.image(
         IMAGE_URL,
