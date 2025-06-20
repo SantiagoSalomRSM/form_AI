@@ -31,13 +31,11 @@ st.set_page_config(page_title="Análisis de Resultados del Formulario",
 IMAGE_URL = "https://github.com/SantiagoSalomRSM/form_AI/blob/41f221f5fc0ca68a008b6df649042197244cea4b/images/logo_rsm.jpg" 
 
 # Use columns to center the image
-col1, col2, col3 = st.columns([1, 2, 1]) # Adjust the ratio for desired centering
-with col3:
+col1, col2, col3 = st.columns([1, 2, 1])
+with col2:
     st.image(
         IMAGE_URL,
-        # width=400, # You can set a specific width in pixels
-        use_column_width="auto", # Or tell it to fill the column
-        caption="A beautiful banner for a beautiful app"
+        use_container_width=True, 
     )
 
 #st.title("Análisis de Resultados del Formulario")
