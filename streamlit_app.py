@@ -33,7 +33,7 @@ def get_base64_of_bin_file(bin_file):
         data = f.read()
     return base64.b64encode(data).decode()
 
-def set_jpg_as_page_bg(jpg_file):
+def set_background(jpg_file):
     bin_str = get_base64_of_bin_file(jpg_file)
     page_bg_img = f'''
     <style>
@@ -45,7 +45,13 @@ def set_jpg_as_page_bg(jpg_file):
     '''
     st.markdown(page_bg_img, unsafe_allow_html=True)
 
-set_jpg_as_page_bg('fondo_consulting_rsm.jpg')
+image_path = os.path.join('assets', 'fondo_consulting_rsm.jpg')
+
+# Verificamos si el archivo existe antes de intentar usarlo
+if os.path.exists(image_path):
+    set_background(image_path)
+else:
+    st.warning("No se encontró la imagen de fondo en la ruta esperada.")
 
 
 # Título y configuración de la página (AÑADIR ICONO RSM, mirar page_icon en la documentación de Streamlit)
