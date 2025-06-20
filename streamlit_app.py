@@ -45,7 +45,7 @@ def set_background(jpg_file):
     '''
     st.markdown(page_bg_img, unsafe_allow_html=True)
 
-image_path = os.path.join('assets', 'fondo_consulting_rsm.jpg')
+image_path = os.path.join('images', 'fondo_consulting_rsm.jpg')
 
 # Verificamos si el archivo existe antes de intentar usarlo
 if os.path.exists(image_path):
@@ -55,7 +55,7 @@ else:
 
 
 # Título y configuración de la página (AÑADIR ICONO RSM, mirar page_icon en la documentación de Streamlit)
-st.set_page_config(page_title="Análisis de Resultados del Formulario", layout="wide", 
+st.set_page_config(page_title="Análisis de Resultados del Formulario", 
                    page_icon=":bar_chart:")
 
 #st.title("Análisis de Resultados del Formulario")
