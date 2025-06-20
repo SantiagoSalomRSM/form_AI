@@ -154,8 +154,7 @@ def generate_prompt(payload: TallyWebhookPayload, submission_id: str, form_type:
                         - **Fortalecer tu Seguridad y Cumplimiento:** Evaluamos y reforzamos tus políticas de seguridad de la información, asegurando el cumplimiento del GDPR y protegiendo tus datos financieros más sensibles.
 
                         ### 📞 Hablemos de tu Estrategia
-                        Estos son desafíos comunes pero críticos en la ruta del crecimiento. La buena noticia es que tienen solución con el enfoque adecuado.
-                        Para empezar a diseñar un plan de acción concreto para tu equipo, simplemente pulsa el botón **'Contactar con RSM'** y envíanos un mensaje. Estaremos encantados de analizar los siguientes pasos contigo.
+                        Estos son desafíos comunes pero críticos en la ruta del crecimiento. La buena noticia es que tienen solución con el enfoque adecuado. Para empezar a diseñar un plan de acción concreto para tu equipo, simplemente pulsa el botón **'Contactar con RSM'** y envíanos un mensaje. Estaremos encantados de analizar los siguientes pasos contigo.
                         ---
 
                         ## **Datos del Formulario del CFO para Analizar:**"""]
