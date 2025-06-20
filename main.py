@@ -117,11 +117,49 @@ def generate_prompt(payload: TallyWebhookPayload, submission_id: str, form_type:
         logger.info(f"[{submission_id}] Formulario CFO detectado. Procesando respuestas.")
 
         # --- Generación del Prompt (sin cambios) ---
-        prompt_parts = ["Analiza las respuestas de la encuesta con el siguiente formato markdown:\n",
-                        "# Análisis Rápido - Departamento Financiero\n",
-                        "Añade también un breve resumen, propuestas, aspectos a mejorar y más comentarios que ayuden a convencer al CFO de contratar nuestros servicios (consultoría)\n",
-                        "Usa un formato consistente para los subapartados (p.ej #### para subtitulos)\n",
-                        "IMPORTANTE que no te extiendas demasiado, el CFO quiere un análisis rápido y directo.\n\n"]
+        prompt_parts = ["""# Prompt para Gemini: Analizar Formulario de CFO para Resumen de Seguimiento
+
+                        ## **Tu Rol y Objetivo:**
+
+                        Actúas como un(a) **Estratega Financiero(a) Sénior** en **[Nombre de tu Empresa]**. Tu especialidad es diagnosticar rápidamente los desafíos operativos y financieros que enfrentan los CFOs y destacar caminos claros hacia la mejora.
+
+                        Tu objetivo es analizar las siguientes respuestas de un formulario de diagnóstico completado por un(a) CFO. Basado en sus respuestas, debes generar un resumen personalizado y conciso en **formato Markdown**. Este resumen debe cumplir con los siguientes puntos:
+
+                        1.  **Reconocer** su contribución y demostrar que hemos comprendido sus problemas clave.
+                        2.  **Presentar** sus desafíos como oportunidades solucionables y estratégicas.
+                        3.  **Posicionar** sutilmente a **[Nombre de tu Empresa]** como el socio experto que puede guiarles.
+                        4.  **Concluir** con una llamada a la acción potente y alentadora para que se pongan en contacto con nosotros.
+
+                        ## **Tono:**
+
+                        Mantén un tono **profesional, seguro y servicial**. Actúas como un colega experto que ofrece una perspectiva valiosa, no como un vendedor. Sé directo(a) pero empático(a), mostrando un entendimiento genuino de su rol y presiones.
+
+                        ## **Estructura del Resultado (Usa este formato Markdown exacto):**
+
+                        Por favor, genera el resultado utilizando la siguiente estructura, incluyendo los emojis y el formato en negrita:
+
+                        ### **🚀 Gracias: Un Análisis Rápido de tu Situación**
+                        *Una apertura breve de una o dos frases que agradece su tiempo y resume el tema central que has identificado (ej. una necesidad de mayor eficiencia, desafíos con la previsión financiera, dificultades para escalar, etc.).*
+
+                        ### **🔑 Desafíos Clave que Hemos Identificado**
+                        *Basado en sus respuestas, crea 2-4 puntos que resalten sus desafíos más significativos. Sintetiza sus respuestas en problemas claros y concisos. Ejemplos:*
+                        *   *- Los procesos de reporting manual están limitando la **capacidad estratégica** de tu equipo.*
+                        *   *- La precisión en las **previsiones (forecasting)** parece ser un obstáculo para la planificación estratégica a largo plazo.*
+                        *   *- Tu **stack tecnológico** actual podría no estar escalando de manera efectiva con el crecimiento de la empresa.*
+
+                        ### **💡 Cómo Podemos Ayudar: Tu Camino a Seguir**
+                        *Para cada desafío clave identificado, redacta un punto correspondiente que sugiera una solución, enmarcándola como un resultado tangible de trabajar con nosotros. Esta es la sección de "ayuda".*
+                        *   *- **Optimizar Operaciones:** Podemos ayudarte a automatizar tareas repetitivas para liberar a tu equipo, permitiéndoles enfocarse en análisis de alto valor.*
+                        *   *- **Afinar tus Previsiones:** Implementemos modelos de forecasting dinámicos para mejorar la precisión, la agilidad del negocio y la confianza en la toma de decisiones.*
+                        *   *- **Potenciar tu Tecnología:** Podemos evaluar y optimizar tu ecosistema tecnológico financiero para asegurar que impulse, y no frene, tu crecimiento.*
+
+                        ### **📞 Hablemos de tu Estrategia**
+                        *Un llamado a la acción final, conciso y profesional. Anímale a agendar una llamada de cortesía para profundizar en estos puntos de una forma concreta.*
+                        *"Estos son desafíos comunes pero críticos en la ruta del crecimiento. La buena noticia es que tienen solución con el enfoque adecuado. Te propongo que agendemos una breve llamada sin compromiso para diseñar un plan de acción concreto para tu equipo. Puedes reservar el horario que mejor te convenga aquí: **[Tu Enlace para Agendar Reuniones]**"*
+
+                        ---
+
+                        ## **Datos del Formulario del CFO para Analizar:**"""]
 
         # ... ( lógica para construir el prompt con payload.data.fields) ... 
         for field in payload.data.fields:
