@@ -28,6 +28,18 @@ except Exception as e:
 st.set_page_config(page_title="Análisis de Resultados del Formulario", 
                    page_icon=":bar_chart:")
 
+IMAGE_URL = "https://raw.githubusercontent.com/streamlit/streamlit/develop/e2e/scripts/media/logo.png" # Replace with your image's raw GitHub URL
+
+# Use columns to center the image
+col1, col2, col3 = st.columns([1, 6, 1]) # Adjust the ratio for desired centering
+with col2:
+    st.image(
+        IMAGE_URL,
+        # width=400, # You can set a specific width in pixels
+        use_column_width="auto", # Or tell it to fill the column
+        caption="A beautiful banner for a beautiful app"
+    )
+    
 #st.title("Análisis de Resultados del Formulario")
 
 # Obtener el ID de envío desde los parámetros de la URL 
@@ -62,10 +74,7 @@ try:
         
         my_bar.empty()
         st.rerun()
-        # with st.spinner("La IA está procesando los datos..."):
-        #     # Actualizar la pagina periódicamente para ver si el análisis ha finalizado
-        #     time.sleep(5)  # Espera 5 segundos antes de actualizar
-        #     st.rerun()  # Vuelve a ejecutar la aplicación 
+
     elif status == STATUS_SUCCESS:
         st.balloons() # Celebrar
         #st.success("Análisis Completado!")
