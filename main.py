@@ -138,25 +138,25 @@ def generate_prompt(payload: TallyWebhookPayload, submission_id: str, form_type:
 
                         Por favor, genera el resultado utilizando la siguiente estructura, incluyendo los emojis y el formato en negrita:
 
-                        ### **🚀 Gracias: Un Análisis Rápido de tu Situación**
-                        *Una apertura breve de una o dos frases que agradece su tiempo y resume el tema central que has identificado (ej. una necesidad de mayor eficiencia, desafíos con la previsión financiera, dificultades para escalar, etc.).*
+                        ### 🚀 Gracias: Un Análisis Rápido de tu Situación
+                        Agradecemos tu tiempo y transparencia al compartir tus desafíos. Identificamos una clara oportunidad para optimizar tus procesos de planificación financiera y presupuestación, impulsando la eficiencia y agilidad en la toma de decisiones.
 
-                        ### **🔑 Desafíos Clave que Hemos Identificado**
-                        *Basado en sus respuestas, crea 2-4 puntos que resalten sus desafíos más significativos. Sintetiza sus respuestas en problemas claros y concisos. Ejemplos:*
-                        *   *- Los procesos de reporting manual están limitando la **capacidad estratégica** de tu equipo.*
-                        *   *- La precisión en las **previsiones (forecasting)** parece ser un obstáculo para la planificación estratégica a largo plazo.*
-                        *   *- Tu **stack tecnológico** actual podría no estar escalando de manera efectiva con el crecimiento de la empresa.*
+                        ### 🔑 Desafíos Clave que Hemos Identificado
+                        - Si bien el cierre de período es rápido (4 días), la baja valoración (4/10) en la eficiencia de los ciclos de presupuestación y forecasting sugiere una **carga manual significativa** que limita la capacidad de respuesta.
+                        - A pesar de contar con un equipo grande (45 personas), la ausencia de una solución de EPM/CPM y la necesidad de recurrir a Excel para cuadres señalan **ineficiencias en los procesos** y una posible **falta de integración de datos**.
+                        - La valoración (6/10) de la usabilidad del ERP y la petición de "más inteligencia" para el sistema de reporting indican una **oportunidad de mejorar la usabilidad y la capacidad analítica** de las herramientas actuales, impactando directamente la eficiencia del equipo.
+                        - La mención del GDPR como tema relevante de seguridad y control de riesgos sugiere la necesidad de **reforzar las políticas y controles de seguridad de la información** para proteger los datos financieros sensibles y asegurar el cumplimiento normativo.
 
-                        ### **💡 Cómo Podemos Ayudar: Tu Camino a Seguir**
-                        *Para cada desafío clave identificado, redacta un punto correspondiente que sugiera una solución, enmarcándola como un resultado tangible de trabajar con nosotros. Esta es la sección de "ayuda".*
-                        *   *- **Optimizar Operaciones:** Podemos ayudarte a automatizar tareas repetitivas para liberar a tu equipo, permitiéndoles enfocarse en análisis de alto valor.*
-                        *   *- **Afinar tus Previsiones:** Implementemos modelos de forecasting dinámicos para mejorar la precisión, la agilidad del negocio y la confianza en la toma de decisiones.*
-                        *   *- **Potenciar tu Tecnología:** Podemos evaluar y optimizar tu ecosistema tecnológico financiero para asegurar que impulse, y no frene, tu crecimiento.*
+                        ### 💡 Cómo Podemos Ayudar: Tu Camino a Seguir
+                        - **Acelerar tus Ciclos de Planificación:** Implementamos soluciones de EPM/CPM a medida para automatizar y centralizar tus procesos de presupuestación y forecasting, permitiéndote reaccionar rápidamente a los cambios del mercado.
+                        - **Integrar tus Datos para una Visión Integral:** Conectamos y consolidamos tus datos de diversas fuentes (ERP, bancos, etc.) en una única plataforma, eliminando silos de información y proporcionando una visión 360° de tu negocio.
+                        - **Potenciar la Usabilidad y el Análisis:** Mejoramos la usabilidad de tus sistemas actuales y agregamos capacidades de Business Intelligence avanzadas, permitiendo a tu equipo tomar decisiones basadas en datos de manera más rápida y efectiva.
+                        - **Fortalecer tu Seguridad y Cumplimiento:** Evaluamos y reforzamos tus políticas de seguridad de la información, asegurando el cumplimiento del GDPR y protegiendo tus datos financieros más sensibles.
 
-                        ### **📞 Hablemos de tu Estrategia**
-                        *Un llamado a la acción final, conciso y profesional. Anímale a agendar una llamada de cortesía para profundizar en estos puntos de una forma concreta.*
-                        *"Estos son desafíos comunes pero críticos en la ruta del crecimiento. La buena noticia es que tienen solución con el enfoque adecuado. Te propongo que agendemos una breve llamada sin compromiso para diseñar un plan de acción concreto para tu equipo. Puedes reservar el horario que mejor te convenga aquí: **[Tu Enlace para Agendar Reuniones]**"*
+                        ### 📞 Hablemos de tu Estrategia
+                        Estos son desafíos comunes pero críticos en la ruta del crecimiento. La buena noticia es que tienen solución con el enfoque adecuado.
 
+                        Para empezar a diseñar un plan de acción concreto para tu equipo, simplemente pulsa el botón **'Contactar con RSM'** y envíanos un mensaje. Estaremos encantados de analizar los siguientes pasos contigo.
                         ---
 
                         ## **Datos del Formulario del CFO para Analizar:**"""]
