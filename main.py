@@ -139,23 +139,24 @@ def generate_prompt(payload: TallyWebhookPayload, submission_id: str, form_type:
                         Por favor, genera el resultado utilizando la siguiente estructura, incluyendo los emojis y el formato en negrita:
 
                         ### 🚀 Gracias: Un Análisis Rápido de tu Situación
-                        Agradecemos tu tiempo y transparencia al compartir tus desafíos. Identificamos una clara oportunidad para optimizar tus procesos de planificación financiera y presupuestación, impulsando la eficiencia y agilidad en la toma de decisiones.
+                        Agradecemos tu tiempo y transparencia al compartir tus desafíos. Identificamos una clara oportunidad para optimizar tus procesos, especialmente en la gestión de la tesorería y la implementación de un sistema EPM/CPM, que impulse la eficiencia y la toma de decisiones estratégicas en Banca.
 
                         ### 🔑 Desafíos Clave que Hemos Identificado
-                        - Si bien el cierre de período es rápido (4 días), la baja valoración (4/10) en la eficiencia de los ciclos de presupuestación y forecasting sugiere una **carga manual significativa** que limita la capacidad de respuesta.
-                        - A pesar de contar con un equipo grande (45 personas), la ausencia de una solución de EPM/CPM y la necesidad de recurrir a Excel para cuadres señalan **ineficiencias en los procesos** y una posible **falta de integración de datos**.
-                        - La valoración (6/10) de la usabilidad del ERP y la petición de "más inteligencia" para el sistema de reporting indican una **oportunidad de mejorar la usabilidad y la capacidad analítica** de las herramientas actuales, impactando directamente la eficiencia del equipo.
-                        - La mención del GDPR como tema relevante de seguridad y control de riesgos sugiere la necesidad de **reforzar las políticas y controles de seguridad de la información** para proteger los datos financieros sensibles y asegurar el cumplimiento normativo.
+                        - A pesar de tener un cierre de período rápido (4 días) y una participación alta (10/10) en la definición tecnológica, la valoración (5/10) de la usabilidad del ERP y la necesidad de realizar "cuadres" en Excel sugieren oportunidades de mejora en la **integración y usabilidad del sistema**, impactando la eficiencia del equipo.
+                        - La valoración (6/10) del nivel de automatización en el cierre y reporting, junto con la ausencia de un software de EPM/CPM y la gestión manual del flujo de caja, indican una necesidad de **automatizar los procesos de planificación financiera** y presupuestación, liberando recursos para análisis estratégico.
+                        - La solicitud de "más inteligencia" para el sistema de reporting señala una oportunidad de mejorar la **capacidad analítica** y el acceso a datos oportunos (7/10 de autonomía del equipo), permitiendo decisiones basadas en datos más rápidas y efectivas.
+                        - La mención de SOX como tema relevante de seguridad y control de riesgos refuerza la necesidad de **robustecer las políticas y controles de seguridad** de la información para proteger los datos financieros sensibles y asegurar el cumplimiento normativo.
 
                         ### 💡 Cómo Podemos Ayudar: Tu Camino a Seguir
-                        - **Acelerar tus Ciclos de Planificación:** Implementamos soluciones de EPM/CPM a medida para automatizar y centralizar tus procesos de presupuestación y forecasting, permitiéndote reaccionar rápidamente a los cambios del mercado.
-                        - **Integrar tus Datos para una Visión Integral:** Conectamos y consolidamos tus datos de diversas fuentes (ERP, bancos, etc.) en una única plataforma, eliminando silos de información y proporcionando una visión 360° de tu negocio.
-                        - **Potenciar la Usabilidad y el Análisis:** Mejoramos la usabilidad de tus sistemas actuales y agregamos capacidades de Business Intelligence avanzadas, permitiendo a tu equipo tomar decisiones basadas en datos de manera más rápida y efectiva.
-                        - **Fortalecer tu Seguridad y Cumplimiento:** Evaluamos y reforzamos tus políticas de seguridad de la información, asegurando el cumplimiento del GDPR y protegiendo tus datos financieros más sensibles.
+                        - **Automatizar tu Planificación Financiera:** Implementamos soluciones de EPM/CPM a medida para automatizar y centralizar tus procesos de presupuestación, forecasting y gestión de la tesorería, permitiéndote reaccionar rápidamente a los cambios del mercado y optimizar el flujo de caja.
+                        - **Integrar y Mejorar la Usabilidad de tus Sistemas:** Conectamos tus datos de diversas fuentes (ERP, bancos, etc.) en una única plataforma, mejorando la usabilidad de tus sistemas y eliminando la necesidad de recurrir a Excel para tareas como los "cuadres".
+                        - **Potenciar el Análisis de Datos:** Agregamos capacidades de Business Intelligence avanzadas a tu sistema de reporting, permitiendo a tu equipo acceder a datos oportunos y tomar decisiones basadas en datos de manera más rápida y efectiva.
+                        - **Fortalecer tu Cumplimiento SOX:** Evaluamos y reforzamos tus políticas de seguridad de la información, asegurando el cumplimiento de las regulaciones SOX y protegiendo tus datos financieros más sensibles.
 
                         ### 📞 Hablemos de tu Estrategia
-                        Estos son desafíos comunes pero críticos en la ruta del crecimiento. La buena noticia es que tienen solución con el enfoque adecuado. Para empezar a diseñar un plan de acción concreto para tu equipo, simplemente pulsa el botón **'Contactar con RSM'** y envíanos un mensaje. Estaremos encantados de analizar los siguientes pasos contigo.
-                        ---
+                        Estos son desafíos comunes pero críticos en la ruta del crecimiento, especialmente en el sector bancario. La buena noticia es que tienen solución con el enfoque adecuado.
+
+                        Para empezar a diseñar un plan de acción concreto para tu equipo, simplemente pulsa el botón **'Contactar con RSM'** y envíanos un mensaje. Estaremos encantados de analizar los siguientes pasos contigo.
 
                         ## **Datos del Formulario del CFO para Analizar:**"""]
 
