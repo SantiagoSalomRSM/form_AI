@@ -28,7 +28,7 @@ except Exception as e:
 st.set_page_config(page_title="Análisis de Resultados del Formulario", 
                    page_icon=":bar_chart:")
 
-IMAGE_URL = "https://github.com/SantiagoSalomRSM/form_AI/blob/41f221f5fc0ca68a008b6df649042197244cea4b/images/logo_rsm.jpg" 
+IMAGE_URL = "https://raw.githubusercontent.com/SantiagoSalomRSM/form_AI/master/images/logo_rsm.jpg" 
 
 # Use columns to center the image
 col1, col2, col3 = st.columns([1, 2, 1])
