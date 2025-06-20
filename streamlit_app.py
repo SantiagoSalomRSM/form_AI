@@ -25,7 +25,8 @@ except Exception as e:
 # --- Streamlit App UI ---
 
 # Título y configuración de la página (AÑADIR ICONO RSM, mirar page_icon en la documentación de Streamlit)
-st.set_page_config(page_title="Análisis de Resultados del Formulario", 
+st.set_page_config(page_title="Análisis de Resultados del Formulario",
+                   layout="wide",
                    page_icon=":bar_chart:")
 
 IMAGE_URL = "https://raw.githubusercontent.com/SantiagoSalomRSM/form_AI/master/images/logo_rsm.jpg" 
