@@ -2,6 +2,7 @@ import streamlit as st
 from supabase import create_client, Client
 import os
 import time
+import base64
 
 # --- Configuración Supabase ---
 SUPABASE_URL = st.secrets.get("SUPABASE_URL") 
@@ -24,6 +25,28 @@ except Exception as e:
 
 
 # --- Streamlit App UI ---
+
+# --- CARGAR IMAGEN DE FONDO ---
+@st.cache_data
+def get_base64_of_bin_file(bin_file):
+    with open(bin_file, 'rb') as f:
+        data = f.read()
+    return base64.b64encode(data).decode()
+
+def set_jpg_as_page_bg(jpg_file):
+    bin_str = get_base64_of_bin_file(jpg_file)
+    page_bg_img = f'''
+    <style>
+    .stApp {{
+        background-image: url("data:image/jpeg;base64,{bin_str}");
+        background-size: cover;
+    }}
+    </style>
+    '''
+    st.markdown(page_bg_img, unsafe_allow_html=True)
+
+set_jpg_as_page_bg('fondo_consulting_rsm.jpg')
+
 
 # Título y configuración de la página (AÑADIR ICONO RSM, mirar page_icon en la documentación de Streamlit)
 st.set_page_config(page_title="Análisis de Resultados del Formulario", layout="wide", 
