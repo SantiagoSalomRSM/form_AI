@@ -113,6 +113,7 @@ def detect_form_type(payload: TallyWebhookPayload) -> str:
 
 def generate_prompt(payload: TallyWebhookPayload, submission_id: str, form_type: str) -> str:
     """Genera un prompt para Gemini basado en el tipo de formulario."""
+
     if form_type == "CFO_Form":
         logger.info(f"[{submission_id}] Formulario CFO detectado. Procesando respuestas.")
 
@@ -176,6 +177,7 @@ def generate_prompt(payload: TallyWebhookPayload, submission_id: str, form_type:
             else:
                 value_str = str(value)
             prompt_parts.append(f"Pregunta: {label_str} - Respuesta: {value_str}")
+
     elif form_type == "consulting":
         logger.info(f"[{submission_id}] Formulario CFO detectado. Procesando respuestas.")
 
@@ -197,10 +199,9 @@ def generate_prompt(payload: TallyWebhookPayload, submission_id: str, form_type:
                         Por favor, genera el resultado utilizando la siguiente estructura, incluyendo los emojis y el formato en negrita (adapta todos los datos a los del formulario(adapta todos los datos a los del formulario y no escribas nada del estilo de: De acuerdo, aquí tienes el resumen del análisis del formulario del CFO, listo para ser usado:):):
 
                         ### 📋 Briefing de Oportunidad: [Industria del Cliente] - Análisis del CFO
-
-                        **Preparado para:** Equipo de Consultoría de [Nombre de tu Empresa]
-                        **Fuente:** Formulario de Diagnóstico
-                        **Nivel de Oportunidad:** Alto
+                        -   **Preparado para:** Equipo de Consulting
+                        -   **Fuente:** Formulario de Diagnóstico
+                        -   **Nivel de Oportunidad:** Alto
 
                         ### 👤 Perfil del Prospecto (CFO)
 
@@ -225,11 +226,9 @@ def generate_prompt(payload: TallyWebhookPayload, submission_id: str, form_type:
                         -   **Problema:** Procesos manuales y sistemas poco usables que frenan a un equipo eficiente.
                             -   **Nuestra Solución:** Implementación de una plataforma de EPM/CPM que centralice la planificación, presupuestación y forecasting, integrada con su ERP para eliminar los "cuadres" en Excel.
                             -   **Argumento de Venta:** "Te ayudamos a que tus herramientas estén al nivel de tu equipo, automatizando tareas de bajo valor para que puedan enfocarse en el análisis estratégico que la dirección demanda".
-
                         -   **Problema:** Reporting básico que no ofrece insights accionables.
                             -   **Nuestra Solución:** Desarrollo de dashboards de Business Intelligence a medida, conectados en tiempo real a sus fuentes de datos.
                             -   **Argumento de Venta:** "Transforma tu reporting de un simple espejo retrovisor a un GPS financiero que guíe tus decisiones futuras".
-
                         -   **Problema:** Riesgo de cumplimiento y seguridad (SOX).
                             -   **Nuestra Solución:** Evaluación y fortalecimiento de controles de acceso y políticas de seguridad dentro de la nueva plataforma.
                             -   **Argumento de Venta:** "Gana eficiencia y, al mismo tiempo, blinda tu operación financiera para cumplir con SOX con total tranquilidad".
@@ -237,13 +236,9 @@ def generate_prompt(payload: TallyWebhookPayload, submission_id: str, form_type:
                         ### ⚠️ Riesgos Potenciales y Próximos Pasos
 
                         -   **Riesgos a Considerar:**
-                            -   El CFO podría estar apegado a Excel por una sensación de control.
-                            -   Pueden tener un presupuesto limitado o ya asignado a otras iniciativas.
-                            -   El equipo de TI interno podría ver nuestra intervención como una amenaza.
+                            -   Mencionar riesgos a considerar
                         -   **Próximos Pasos Recomendados:**
-                            1.  **Agendar Llamada de Descubrimiento:** El objetivo es profundizar en el impacto cuantitativo de la baja usabilidad del ERP (horas/hombre perdidas).
-                            2.  **Preparar Demo Corta:** Enfocada en la integración de datos y la automatización del flujo de caja dentro de una solución EPM/CPM.
-                            3.  **Investigar su ERP actual:** Conocer sus limitaciones específicas para hablar con propiedad.
+                            1.  Mencionar próximos pasos recomendados
 
                         ## **Datos del Formulario del CFO para Analizar:**"""]
 
@@ -264,6 +259,7 @@ def generate_prompt(payload: TallyWebhookPayload, submission_id: str, form_type:
             else:
                 value_str = str(value)
             prompt_parts.append(f"Pregunta: {label_str} - Respuesta: {value_str}")
+            
     else:
         logger.info(f"[{submission_id}] Otro tipo de formulario detectado. Procesando respuestas.")
 
