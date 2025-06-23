@@ -129,12 +129,12 @@ def extract_ai_preference(payload: TallyWebhookPayload) -> str:
     ai_preference = "gemini"  # Valor por defecto
     if payload.data.fields:
         first_answer = payload.data.fields[0]
-        first_id = first_answer.value 
+        first_id = first_answer.value[0] 
         id_to_text = {opt.id: opt.text.lower() for opt in first_answer.options}
         first_chosen = id_to_text.get(first_id, "")
         if "Sí" in first_chosen:
             second_answer = payload.data.fields[1]
-            second_id = second_answer.value
+            second_id = second_answer.value[0]
             id_to_text = {opt.id: opt.text.lower() for opt in second_answer.options}
             second_chosen = id_to_text.get(second_id, "")
             if "DeepSeek" in second_chosen:
