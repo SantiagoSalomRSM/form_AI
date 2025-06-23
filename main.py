@@ -184,7 +184,7 @@ def generate_prompt(payload: TallyWebhookPayload, submission_id: str, form_type:
 
                         ## **Tu Rol y Objetivo:**
 
-                        Actúas como un(a) **Analista Estratégico de Cuentas** para el equipo de consultoría de **[Nombre de tu Empresa]**. Tu especialidad es destilar la información de prospectos (CFOs) en un briefing interno accionable.
+                        Actúas como un(a) **Analista Estratégico de Cuentas** para un equipo de consultoría tecnológica. Tu especialidad es destilar la información de prospectos (CFOs) en un briefing interno accionable.
 
                         Tu objetivo es analizar las respuestas del formulario de un(a) CFO y generar un **resumen estratégico interno en formato Markdown**. Este documento preparará al equipo de ventas/consultoría para la primera llamada, destacando los puntos de dolor, los ganchos de venta y la estrategia de aproximación.
 
