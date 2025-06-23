@@ -1,7 +1,6 @@
-[theme] # You have to add this line
-
-primaryColor = '#FF8C02' # Bright Orange
-
-backgroundColor = '#00325B' # Dark Blue
-
-secondaryBackgroundColor = '#55B2FF' # Lighter Blue
+[theme]
+primaryColor = "#0072C6"            # RSM blue (main accent)
+backgroundColor = "#f7f9fb"         # Very light gray (background)
+secondaryBackgroundColor = "#e6f2ff" # Light blue (cards, sidebars)
+textColor = "#222222"               # Almost black (text)
+font = "sans serif"
