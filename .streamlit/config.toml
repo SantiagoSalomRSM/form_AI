@@ -1,6 +1,16 @@
 [theme]
-primaryColor="#6eb52f"
-backgroundColor="#f0f0f5"
-secondaryBackgroundColor="#e0e0ef"
-textColor="#262730"
-font="sans serif"
+primaryColor = "#6eb52f"
+
+# Background color for the main content area.
+backgroundColor = "#f0f0f5"
+
+# Background color for sidebar and most interactive widgets.
+secondaryBackgroundColor = "#e0e0ef"
+
+# Color for text.
+textColor = "#262730"
+
+# Font family for all text in the app, except code blocks.
+# We're using a professional, modern font stack.
+# "Inter" is a great choice for UIs.
+font = "'Inter'
