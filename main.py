@@ -12,6 +12,7 @@ import time
 import supabase
 from supabase import create_client, Client
 import json
+from openai import OpenAI
 
 # --- Configuración Inicial ---
 logging.basicConfig(level=logging.INFO)
@@ -30,6 +31,18 @@ else:
         logger.error(f"Error configurando el cliente de Gemini: {e}")
 
 GEMINI_MODEL_NAME = "gemini-2.0-flash" # Use a valid model
+
+# --- Configuración DeepSeek ---
+DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
+if not DEEPSEEK_API_KEY:
+    logger.error("Error: La variable de entorno DEEPSEEK_API_KEY no está configurada.")
+else:
+    try:
+        client = OpenAI(api_key=DEEPSEEK_API_KEY, base_url="https://api.deepseek.com")
+        logger.info("Cliente de DeepSeek configurado correctamente.")
+    except Exception as e:
+        logger.error(f"Error configurando el cliente de DeepSeek: {e}")
+
 
 # --- Configuración Supabase ---
 SUPABASE_URL: str = os.getenv("SUPABASE_URL")
@@ -109,6 +122,14 @@ def detect_form_type(payload: TallyWebhookPayload) -> str:
         first_label = payload.data.fields[0].label or payload.data.fields[0].key
         if first_label.strip() == "¿De qué sector es tu empresa o grupo?":
             return "CFO_Form"
+    return "Unknown"
+
+def detect_chosen_AI(payload: TallyWebhookPayload) -> str:
+    """Detecta el AI elegido basándose en la primera label o key."""
+    if payload.data.fields:
+        first_label = payload.data.fields[0].label or payload.data.fields[0].key
+        if first_label.strip() == "¿Qué AI has elegido?":
+            return payload.data.fields[0].value.strip()
     return "Unknown"
 
 def generate_prompt(payload: TallyWebhookPayload, submission_id: str, form_type: str) -> str:
@@ -301,7 +322,6 @@ def generate_prompt(payload: TallyWebhookPayload, submission_id: str, form_type:
     full_prompt = "".join(prompt_parts)
     return full_prompt
 
-
 # --- Lógica para interactuar con Gemini ---
 async def generate_gemini_response(submission_id: str, prompt: str, prompt_type: str):
     """Genera una respuesta de Gemini y actualiza Supabase con el resultado."""
@@ -389,6 +409,8 @@ async def handle_tally_webhook(payload: TallyWebhookPayload, background_tasks: B
     logger.info(f"[{submission_id}] Webhook recibido. Verificando Supabase (ID: {submission_id}).")
     logger.info(f"[{submission_id}] Event ID: {payload.eventId}, Event Type: {payload.eventType}")
 
+    logger.info(payload.data.fields) # Log para ver los campos del payload
+    
     try:
         # Verificar si ya existe un estado final (success o error) o si aún está procesando
         # Usamos SET con NX (Not Exists) y GET para hacerlo atómico y evitar race conditions
@@ -402,6 +424,7 @@ async def handle_tally_webhook(payload: TallyWebhookPayload, background_tasks: B
                 logger.warning(f"[{submission_id}] Webhook ignorado: ya tiene estado final '{data.data['status']}'.")
                 return {"status": "ok", "message": f"Already processed with status: {data.data['status']}"}
         
+        # Extraer información relevante del formulario
         form_type = detect_form_type(payload)
         response = summarize_payload(payload)
         supabase_client.table("form_AI_DB").insert({
