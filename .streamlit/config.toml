@@ -1,6 +1,6 @@
 [theme]
-primaryColor = "#0072C6"            # RSM blue (main accent)
-backgroundColor = "#f7f9fb"         # Very light gray (background)
-secondaryBackgroundColor = "#e6f2ff" # Light blue (cards, sidebars)
-textColor = "#222222"               # Almost black (text)
-font = "sans serif"
+primaryColor="#6eb52f"
+backgroundColor="#f0f0f5"
+secondaryBackgroundColor="#e0e0ef"
+textColor="#262730"
+font="sans serif"
