@@ -24,6 +24,25 @@ except Exception as e:
 
 
 # --- Streamlit App UI ---
+# Cargar la fuente Prelo desde un archivo base64
+with open("fonts/prelo_base64.txt", "r") as f:
+    prelo_base64 = f.read().replace('\n', '')
+
+st.markdown(f"""
+<style>
+@font-face {{
+  font-family: 'Prelo';
+  src: url(data:font/otf;base64,{prelo_base64}) format('opentype');
+  font-weight: normal;
+  font-style: normal;
+}}
+html, body, [class*="st-"] {{
+    font-family: 'Prelo', 'Segoe UI', Arial, sans-serif !important;
+}}
+</style>
+""", unsafe_allow_html=True)
+
+
 LOGO_URL = "https://raw.githubusercontent.com/SantiagoSalomRSM/form_AI/master/images/RSM Standard Logo RGB.png" 
 
 # Título y configuración de la página icono logo

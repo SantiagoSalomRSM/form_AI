@@ -1,3 +1,5 @@
-import streamlit as st
+import base64
 
-st.success('This is a success message!', icon="✅")
+with open("fonts/Prelo-Black.otf", "rb") as f:
+    b64 = base64.b64encode(f.read()).decode()
+    print(b64)
