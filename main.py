@@ -119,7 +119,7 @@ def summarize_payload(payload: TallyWebhookPayload) -> str:
 def detect_form_type(payload: TallyWebhookPayload) -> str:
     """Detecta el form type basándose en la primera label o key."""
     if payload.data.fields:
-        first_label = payload.data.fields[0].label or payload.data.fields[0].key
+        first_label = payload.data.fields[2].label 
         if first_label.strip() == "¿De qué sector es tu empresa o grupo?":
             return "CFO_Form"
     return "Unknown"
@@ -420,8 +420,6 @@ async def handle_tally_webhook(payload: TallyWebhookPayload, background_tasks: B
     logger.info(f"[{submission_id}] Webhook recibido. Verificando Supabase (ID: {submission_id}).")
     logger.info(f"[{submission_id}] Event ID: {payload.eventId}, Event Type: {payload.eventType}")
 
-    logger.info(payload.data.fields)
-    
     try:
         # Verificar si ya existe un estado final (success o error) o si aún está procesando
         # Usamos SET con NX (Not Exists) y GET para hacerlo atómico y evitar race conditions
