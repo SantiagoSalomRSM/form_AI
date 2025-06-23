@@ -24,42 +24,18 @@ except Exception as e:
 
 
 # --- Streamlit App UI ---
-# ...existing code...
+LOGO_URL = "https://raw.githubusercontent.com/SantiagoSalomRSM/form_AI/master/images/logo_rsm.jpg" 
 
-custom_css = """
-<style>
-body {
-    background-color: #f7f9fb;
-}
-.stApp {
-    font-family: 'Segoe UI', Arial, sans-serif;
-}
-h1, h2, h3, h4 {
-    color: #0072C6;
-}
-.stButton>button {
-    background-color: #0072C6;
-    color: white;
-    border-radius: 8px;
-    font-weight: bold;
-}
-</style>
-"""
-st.markdown(custom_css, unsafe_allow_html=True)
-# ...existing code...
-
-# Título y configuración de la página 
+# Título y configuración de la página icono logo
 st.set_page_config(page_title="Análisis de Resultados del Formulario",
                    layout="wide",
-                   page_icon=":bar_chart:")
-
-IMAGE_URL = "https://raw.githubusercontent.com/SantiagoSalomRSM/form_AI/master/images/logo_rsm.jpg" 
+                   page_icon=LOGO_URL)
 
 # Use columns to center the image
 col1, col2, col3 = st.columns([1, 1, 1])
 with col2:
     st.image(
-        IMAGE_URL,
+        LOGO_URL,
         use_container_width=True, 
     )
 

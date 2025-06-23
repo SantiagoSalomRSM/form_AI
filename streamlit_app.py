@@ -30,13 +30,13 @@ st.set_page_config(page_title="Análisis de Resultados del Formulario",
                    layout="wide",
                    page_icon=":bar_chart:")
 
-IMAGE_URL = "https://raw.githubusercontent.com/SantiagoSalomRSM/form_AI/master/images/logo_rsm.jpg" 
+LOGO_URL = "https://raw.githubusercontent.com/SantiagoSalomRSM/form_AI/master/images/logo_rsm.jpg" 
 
 # Use columns to center the image
 col1, col2, col3 = st.columns([1, 1, 1])
 with col2:
     st.image(
-        IMAGE_URL,
+        LOGO_URL,
         use_container_width=True, 
     )
 
@@ -111,6 +111,7 @@ hide_streamlit_style = """
     <style>
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
+    header {visibility: hidden;}
     </style>
 """
 st.markdown(hide_streamlit_style, unsafe_allow_html=True)
