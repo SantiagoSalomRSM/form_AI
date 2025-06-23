@@ -135,7 +135,7 @@ def generate_prompt(payload: TallyWebhookPayload, submission_id: str, form_type:
 
                         Mantén un tono **profesional, seguro y servicial**. Actúas como un colega experto que ofrece una perspectiva valiosa, no como un vendedor. Sé directo(a) pero empático(a), mostrando un entendimiento genuino de su rol y presiones.
 
-                        ## **Estructura del Resultado (Usa este formato Markdown exacto):**
+                        ## **Estructura del Resultado (Usa este formato Markdown exacto, --- representa un divider):**
 
                         Por favor, genera el resultado utilizando la siguiente estructura, incluyendo los emojis y el formato en negrita (adapta todos los datos a los del formulario y no escribas nada del estilo: De acuerdo, aquí tienes el resumen del análisis del formulario del CFO, listo para ser usado:):
 
@@ -200,7 +200,7 @@ def generate_prompt(payload: TallyWebhookPayload, submission_id: str, form_type:
 
                         **Directo, analítico y estratégico.** Utiliza un lenguaje de negocio claro y orientado a la acción. El objetivo no es vender al CFO, sino **armar al equipo interno** con la inteligencia necesaria para tener éxito. Cero "fluff" de marketing.
 
-                        ## **Estructura del Resultado (Usa este formato Markdown exacto):**
+                        ## **Estructura del Resultado (Usa este formato Markdown exacto --- representa un divider):**
 
                         Por favor, genera el resultado utilizando la siguiente estructura, incluyendo los emojis y el formato en negrita (adapta todos los datos a los del formulario(adapta todos los datos a los del formulario y no escribas nada del estilo de: De acuerdo, aquí tienes el resumen del análisis del formulario del CFO, listo para ser usado:):):
 
