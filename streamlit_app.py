@@ -2,6 +2,7 @@ import streamlit as st
 from supabase import create_client, Client
 import os
 import time
+
 # --- Configuración Supabase ---
 SUPABASE_URL = st.secrets.get("SUPABASE_URL") 
 SUPABASE_KEY = st.secrets.get("SUPABASE_KEY")
@@ -24,7 +25,7 @@ except Exception as e:
 
 # --- Streamlit App UI ---
 
-# Título y configuración de la página (AÑADIR ICONO RSM, mirar page_icon en la documentación de Streamlit)
+# Título y configuración de la página 
 st.set_page_config(page_title="Análisis de Resultados del Formulario",
                    layout="wide",
                    page_icon=":bar_chart:")
@@ -58,7 +59,7 @@ try:
         st.stop()
 
     status = data.data[0]['status'] if data.data else None # Extraer el estado 
-    result_text = data.data[0]['result'] if data.data else None # Extraer el resultado 
+    result_text = data.data[0]['result_client'] if data.data else None # Extraer el resultado 
     user_responses = data.data[0].get('user_responses', None) if data.data else None # Extraer las respuestas del usuario
 
     # Mostrar el estado del análisis y resultados

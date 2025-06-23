@@ -176,6 +176,94 @@ def generate_prompt(payload: TallyWebhookPayload, submission_id: str, form_type:
             else:
                 value_str = str(value)
             prompt_parts.append(f"Pregunta: {label_str} - Respuesta: {value_str}")
+    elif form_type == "consulting":
+        logger.info(f"[{submission_id}] Formulario CFO detectado. Procesando respuestas.")
+
+        # --- Generación del Prompt (sin cambios) ---
+        prompt_parts = ["""# Prompt para Gemini: Generar Briefing Interno de Oportunidad de Venta (Análisis de Formulario de CFO)
+
+                        ## **Tu Rol y Objetivo:**
+
+                        Actúas como un(a) **Analista Estratégico de Cuentas** para el equipo de consultoría de **[Nombre de tu Empresa]**. Tu especialidad es destilar la información de prospectos (CFOs) en un briefing interno accionable.
+
+                        Tu objetivo es analizar las respuestas del formulario de un(a) CFO y generar un **resumen estratégico interno en formato Markdown**. Este documento preparará al equipo de ventas/consultoría para la primera llamada, destacando los puntos de dolor, los ganchos de venta y la estrategia de aproximación.
+
+                        ## **Tono:**
+
+                        **Directo, analítico y estratégico.** Utiliza un lenguaje de negocio claro y orientado a la acción. El objetivo no es vender al CFO, sino **armar al equipo interno** con la inteligencia necesaria para tener éxito. Cero "fluff" de marketing.
+
+                        ## **Estructura del Resultado (Usa este formato Markdown exacto):**
+
+                        Por favor, genera el resultado utilizando la siguiente estructura, incluyendo los emojis y el formato en negrita (adapta todos los datos a los del formulario):
+
+                        ### 📋 Briefing de Oportunidad: [Industria del Cliente] - Análisis del CFO
+
+                        **Preparado para:** Equipo de Consultoría de [Nombre de tu Empresa]
+                        **Fuente:** Formulario de Diagnóstico
+                        **Nivel de Oportunidad:** Alto
+
+                        ### 👤 Perfil del Prospecto (CFO)
+
+                        -   **Industria:** Banca
+                        -   **Rol:** CFO
+                        -   **Tiempo de Cierre de Período:** 4 días (Rápido, indica eficiencia en ciertas áreas).
+                        -   **Participación en Definición Tecnológica:** 10/10 (Decisor clave).
+                        -   **Valoración Usabilidad ERP:** 5/10 (Punto de dolor significativo).
+                        -   **Autonomía del Equipo (Datos):** 7/10 (Bueno, pero con margen de mejora).
+                        -   **Nivel de Automatización (Cierre/Reporting):** 6/10 (Oportunidad clara).
+                        -   **Tema de Seguridad Relevante:** Cumplimiento SOX.
+
+                        ### 🎯 Puntos de Dolor y Ganchos de Venta
+
+                        -   **Fricción con el ERP actual:** A pesar de un cierre rápido, la baja usabilidad (5/10) y el uso de Excel para "cuadres" es un **gancho claro** para nuestra solución de integración y automatización. El equipo es eficiente *a pesar* de sus herramientas, no gracias a ellas.
+                        -   **Dependencia de Procesos Manuales:** La ausencia de un software EPM/CPM y la gestión manual del flujo de caja son ineficiencias críticas. Esto representa nuestro **principal ángulo de venta**: la automatización de la planificación financiera para liberar tiempo estratégico.
+                        -   **Necesidad de Inteligencia de Negocio:** La petición explícita de "más inteligencia" para el reporting es una puerta de entrada directa para nuestras capacidades de BI. Quieren pasar de reportar el pasado a predecir el futuro.
+                        -   **Presión Regulatoria (SOX):** La mención de SOX es un gancho de alto valor. Podemos posicionar nuestras soluciones no solo como una mejora de eficiencia, sino como una **herramienta para robustecer el control interno** y asegurar el cumplimiento.
+
+                        ### 💡 Ángulo de Venta y Solución Propuesta
+
+                        -   **Problema:** Procesos manuales y sistemas poco usables que frenan a un equipo eficiente.
+                            -   **Nuestra Solución:** Implementación de una plataforma de EPM/CPM que centralice la planificación, presupuestación y forecasting, integrada con su ERP para eliminar los "cuadres" en Excel.
+                            -   **Argumento de Venta:** "Te ayudamos a que tus herramientas estén al nivel de tu equipo, automatizando tareas de bajo valor para que puedan enfocarse en el análisis estratégico que la dirección demanda".
+
+                        -   **Problema:** Reporting básico que no ofrece insights accionables.
+                            -   **Nuestra Solución:** Desarrollo de dashboards de Business Intelligence a medida, conectados en tiempo real a sus fuentes de datos.
+                            -   **Argumento de Venta:** "Transforma tu reporting de un simple espejo retrovisor a un GPS financiero que guíe tus decisiones futuras".
+
+                        -   **Problema:** Riesgo de cumplimiento y seguridad (SOX).
+                            -   **Nuestra Solución:** Evaluación y fortalecimiento de controles de acceso y políticas de seguridad dentro de la nueva plataforma.
+                            -   **Argumento de Venta:** "Gana eficiencia y, al mismo tiempo, blinda tu operación financiera para cumplir con SOX con total tranquilidad".
+
+                        ### ⚠️ Riesgos Potenciales y Próximos Pasos
+
+                        -   **Riesgos a Considerar:**
+                            -   El CFO podría estar apegado a Excel por una sensación de control.
+                            -   Pueden tener un presupuesto limitado o ya asignado a otras iniciativas.
+                            -   El equipo de TI interno podría ver nuestra intervención como una amenaza.
+                        -   **Próximos Pasos Recomendados:**
+                            1.  **Agendar Llamada de Descubrimiento:** El objetivo es profundizar en el impacto cuantitativo de la baja usabilidad del ERP (horas/hombre perdidas).
+                            2.  **Preparar Demo Corta:** Enfocada en la integración de datos y la automatización del flujo de caja dentro de una solución EPM/CPM.
+                            3.  **Investigar su ERP actual:** Conocer sus limitaciones específicas para hablar con propiedad.
+
+                        ## **Datos del Formulario del CFO para Analizar:**"""]
+
+        # ... ( lógica para construir el prompt con payload.data.fields) ... 
+        for field in payload.data.fields:
+            label = field.label
+            label_str = "null" if label is None else str(label).strip()
+            value = field.value
+            value_str = ""
+            if isinstance(value, list):
+                try:
+                    value_str = f'"{",".join(map(str, value))}"'
+                except Exception as e:
+                    logger.error(f"[{submission_id}] Error convirtiendo lista a string: {e}")
+                    value_str = "[Error procesando lista]"
+            elif value is None:
+                value_str = "null"
+            else:
+                value_str = str(value)
+            prompt_parts.append(f"Pregunta: {label_str} - Respuesta: {value_str}")
     else:
         logger.info(f"[{submission_id}] Otro tipo de formulario detectado. Procesando respuestas.")
 
@@ -205,7 +293,7 @@ def generate_prompt(payload: TallyWebhookPayload, submission_id: str, form_type:
 
 
 # --- Lógica para interactuar con Gemini ---
-async def generate_gemini_response(submission_id: str, prompt: str):
+async def generate_gemini_response(submission_id: str, prompt: str, prompt_type: str):
     """Genera una respuesta de Gemini y actualiza Supabase con el resultado."""
     logger.info(f"[{submission_id}] Iniciando tarea Gemini.")
     
@@ -231,23 +319,36 @@ async def generate_gemini_response(submission_id: str, prompt: str):
         # --- Actualizar Supabase con el resultado ---
         if result_text:
             # Guardar resultado en Supabase
-            try:
-                supabase_client.table("form_AI_DB").update({
-                    "submission_id": submission_id,
-                    "status": STATUS_SUCCESS,
-                    "result": result_text
-                }).eq("submission_id", submission_id).execute()
-                logger.info(f"[{submission_id}] Resultado guardado en Supabase.")
-                logger.info(f"[{submission_id}] Estado '{STATUS_SUCCESS}' y resultado guardados en Supabase.")
-            except Exception as e:
-                logger.error(f"[{submission_id}] Error guardando resultado en Supabase: {e}")
+            if prompt_type == "consulting":
+                try:
+                    supabase_client.table("form_AI_DB").update({
+                        "submission_id": submission_id,
+                        "status": STATUS_SUCCESS,
+                        "result_consulting": result_text
+                    }).eq("submission_id", submission_id).execute()
+                    logger.info(f"[{submission_id}] Resultado guardado en Supabase.")
+                    logger.info(f"[{submission_id}] Estado '{STATUS_SUCCESS}' y resultado guardados en Supabase.")
+                except Exception as e:
+                    logger.error(f"[{submission_id}] Error guardando resultado en Supabase: {e}")
+            else:
+                try:
+                    supabase_client.table("form_AI_DB").update({
+                        "submission_id": submission_id,
+                        "status": STATUS_SUCCESS,
+                        "result_client": result_text
+                    }).eq("submission_id", submission_id).execute()
+                    logger.info(f"[{submission_id}] Resultado guardado en Supabase.")
+                    logger.info(f"[{submission_id}] Estado '{STATUS_SUCCESS}' y resultado guardados en Supabase.")
+                except Exception as e:
+                    logger.error(f"[{submission_id}] Error guardando resultado en Supabase: {e}")
         else:
             # Si no hay texto válido, guardar error
             try:
                 supabase_client.table("form_AI_DB").update({
                     "submission_id": submission_id,
                     "status": STATUS_ERROR,
-                    "result": GEMINI_ERROR_MARKER
+                    "result_client": GEMINI_ERROR_MARKER,
+                    "result_consulting": GEMINI_ERROR_MARKER
                 }).eq("submission_id", submission_id).execute()
                 logger.warning(f"[{submission_id}] Estado '{STATUS_ERROR}' y marcador guardados en Supabase (sin texto válido).")
             except Exception as e:
@@ -260,7 +361,8 @@ async def generate_gemini_response(submission_id: str, prompt: str):
             supabase_client.table("form_AI_DB").update({
                 "submission_id": submission_id,
                 "status": STATUS_ERROR,
-                "result": f"Error interno: {e}"
+                "result_client": f"Error interno: {e}",
+                "result_consulting": f"Error interno: {e}"
             }).eq("submission_id", submission_id).execute()
             logger.warning(f"[{submission_id}] Estado '{STATUS_ERROR}' guardado en Supabase debido a excepción.")
         except Exception as e:
@@ -295,7 +397,8 @@ async def handle_tally_webhook(payload: TallyWebhookPayload, background_tasks: B
         supabase_client.table("form_AI_DB").insert({
                 "submission_id": submission_id,
                 "status": STATUS_PROCESSING,
-                "result": None,  # Inicialmente no hay resultado"
+                "result_client": None,  # Inicialmente no hay resultado"
+                "result_consulting": None,  # Inicialmente no hay resultado
                 "user_responses": response,  # Resumen legible del payload
                 "form_type": form_type  # Tipo de formulario
             }).execute()
@@ -305,88 +408,96 @@ async def handle_tally_webhook(payload: TallyWebhookPayload, background_tasks: B
 
 # -------------------------------------------------
         # --- Generación del Prompt modularizada ---
-        full_prompt = generate_prompt(payload, submission_id, form_type)
-        logger.debug(f"[{submission_id}] Prompt para Gemini: {full_prompt[:200]}...")
+        prompt_cliente = generate_prompt(payload, submission_id, form_type)
+        logger.debug(f"[{submission_id}] Prompt para Gemini: {prompt_cliente[:200]}...")
  
     # --- Iniciar Tarea en Segundo Plano ---
-        background_tasks.add_task(generate_gemini_response, submission_id, full_prompt)
+        background_tasks.add_task(generate_gemini_response, submission_id, prompt_cliente, form_type)
+        logger.info(f"[{submission_id}] Tarea de Gemini iniciada en segundo plano.")
+    
+    # --- Generación del Prompt para consultoría ---
+        prompt_consulting = generate_prompt(payload, submission_id, "consulting")
+        logger.debug(f"[{submission_id}] Prompt para Gemini (Consulting): {prompt_consulting[:200]}...")
+ 
+    # --- Iniciar Tarea en Segundo Plano (después de respuesta cliente) ---
+        background_tasks.add_task(generate_gemini_response, submission_id, prompt_consulting, "consulting")
         logger.info(f"[{submission_id}] Tarea de Gemini iniciada en segundo plano.")
 
         return {"status": "ok", "message": "Processing started"}
-
+    
     except Exception as e:
         logger.error(f"[{submission_id}] Error procesando webhook: {e}", exc_info=True)
         # Devolver error 500 si algo falla aquí es crítico
         raise HTTPException(status_code=500, detail="Internal server error")
     
 
-# --- GET METHOD (Defined AFTER the PUT for the same path) ---
-@app.get("/results/{submission_id}", response_class=HTMLResponse)
-async def get_results_page(request: Request, submission_id: str):
+# # --- GET METHOD (Defined AFTER the PUT for the same path) ---
+# @app.get("/results/{submission_id}", response_class=HTMLResponse)
+# async def get_results_page(request: Request, submission_id: str):
 
-    final_status = STATUS_NOT_FOUND # Estado por defecto si no encontramos la key de estado
-    result_value = False # Indica si hay resultado
-    error_message = None
-    http_status_code = 404 # Por defecto es Not Found
+#     final_status = STATUS_NOT_FOUND # Estado por defecto si no encontramos la key de estado
+#     result_value = False # Indica si hay resultado
+#     error_message = None
+#     http_status_code = 404 # Por defecto es Not Found
 
-    logger.info(f"[{submission_id}] GET /results. Consultando Supabase (ID: {submission_id}).")
+#     logger.info(f"[{submission_id}] GET /results. Consultando Supabase (ID: {submission_id}).")
 
-    try:
-        # Obtener el estado en Supabase
+#     try:
+#         # Obtener el estado en Supabase
 
-        data = supabase_client.table("form_AI_DB").select("*").eq("submission_id", submission_id).execute()
-        supabase_status = data.data[0]['status'] if data.data else None # Extraer el estado si existe
-        supabase_result = data.data[0]['result'] if data.data else None # Extraer el resultado si existe
-        logger.info(f"[{submission_id}] Estado en Supabase: {supabase_status}).")
+#         data = supabase_client.table("form_AI_DB").select("*").eq("submission_id", submission_id).execute()
+#         supabase_status = data.data[0]['status'] if data.data else None # Extraer el estado si existe
+#         supabase_result = data.data[0]['result_client'] if data.data else None # Extraer el resultado si existe
+#         logger.info(f"[{submission_id}] Estado en Supabase: {supabase_status}).")
 
-        if supabase_status == STATUS_PROCESSING:
-            final_status = STATUS_PROCESSING
-            http_status_code = 200 # Página encontrada, pero está procesando
-            logger.info(f"[{submission_id}] Estado Supabase: {STATUS_PROCESSING}")
-        elif supabase_status == STATUS_SUCCESS:
-            final_status = STATUS_SUCCESS
-            http_status_code = 200
-            result_value = supabase_result
-            logger.info(f"[{submission_id}] Estado Supabase: {STATUS_SUCCESS}. Resultado obtenido.")
-        elif supabase_status == STATUS_ERROR:
-            final_status = STATUS_ERROR
-            http_status_code = 200 # Mostramos la página de error normalmente
-            error_message = supabase_result
-            logger.warning(f"[{submission_id}] Estado Supabase: {STATUS_ERROR}. Mensaje/marcador: {error_message}")
-        elif supabase_status is None:
-            # La key de estado no existe, por lo tanto "not found"
-            final_status = STATUS_NOT_FOUND
-            http_status_code = 404
-            logger.warning(f"[{submission_id}] No se encontró estado en Supabase (ID: {submission_id}).")
-        else:
-            # Estado inesperado guardado en Supabase
-            final_status = STATUS_ERROR
-            http_status_code = 500  # Error interno porque el estado es inválido
-            error_message = f"Error interno: Estado inválido '{supabase_status}' encontrado en Supabase."
-            logger.error(f"[{submission_id}] {error_message}")  
+#         if supabase_status == STATUS_PROCESSING:
+#             final_status = STATUS_PROCESSING
+#             http_status_code = 200 # Página encontrada, pero está procesando
+#             logger.info(f"[{submission_id}] Estado Supabase: {STATUS_PROCESSING}")
+#         elif supabase_status == STATUS_SUCCESS:
+#             final_status = STATUS_SUCCESS
+#             http_status_code = 200
+#             result_value = supabase_result
+#             logger.info(f"[{submission_id}] Estado Supabase: {STATUS_SUCCESS}. Resultado obtenido.")
+#         elif supabase_status == STATUS_ERROR:
+#             final_status = STATUS_ERROR
+#             http_status_code = 200 # Mostramos la página de error normalmente
+#             error_message = supabase_result
+#             logger.warning(f"[{submission_id}] Estado Supabase: {STATUS_ERROR}. Mensaje/marcador: {error_message}")
+#         elif supabase_status is None:
+#             # La key de estado no existe, por lo tanto "not found"
+#             final_status = STATUS_NOT_FOUND
+#             http_status_code = 404
+#             logger.warning(f"[{submission_id}] No se encontró estado en Supabase (ID: {submission_id}).")
+#         else:
+#             # Estado inesperado guardado en Supabase
+#             final_status = STATUS_ERROR
+#             http_status_code = 500  # Error interno porque el estado es inválido
+#             error_message = f"Error interno: Estado inválido '{supabase_status}' encontrado en Supabase."
+#             logger.error(f"[{submission_id}] {error_message}")  
 
-        # Contexto para la plantilla
-        context = {
-            "request": request,
-            "submission_id": submission_id,
-            "result": result_value if final_status == STATUS_SUCCESS else None,
-            "error_message": error_message if final_status == STATUS_ERROR else None,
-            "status": final_status # Pasar el estado final a la plantilla
-        }
-        logger.info(f"linea 270 - [{submission_id}] - request: {request}") #chivato
-        logger.info(f"linea 271 - [{submission_id}] - submission_id: {submission_id}") #chivato
-        logger.info(f"linea 272 - [{submission_id}] - result: {result_value}") #chivato
-        logger.info(f"linea 273 - [{submission_id}] - error_message: {error_message}") #chivato 
-        logger.info(f"linea 274 - [{submission_id}] - status: {final_status}") #chivato
-        logger.info(f"linea 275 - [{submission_id}] - status_code: {http_status_code}") #chivato
+#         # Contexto para la plantilla
+#         context = {
+#             "request": request,
+#             "submission_id": submission_id,
+#             "result_client": result_value if final_status == STATUS_SUCCESS else None,
+#             "error_message": error_message if final_status == STATUS_ERROR else None,
+#             "status": final_status # Pasar el estado final a la plantilla
+#         }
+#         logger.info(f"linea 270 - [{submission_id}] - request: {request}") #chivato
+#         logger.info(f"linea 271 - [{submission_id}] - submission_id: {submission_id}") #chivato
+#         logger.info(f"linea 272 - [{submission_id}] - result_client: {result_value}") #chivato
+#         logger.info(f"linea 273 - [{submission_id}] - error_message: {error_message}") #chivato 
+#         logger.info(f"linea 274 - [{submission_id}] - status: {final_status}") #chivato
+#         logger.info(f"linea 275 - [{submission_id}] - status_code: {http_status_code}") #chivato
                
-        return templates.TemplateResponse("results.html", context, status_code=http_status_code)
+#         return templates.TemplateResponse("results.html", context, status_code=http_status_code)
     
-    except Exception as e:
-        logger.error(f"[{submission_id}] Error inesperado en GET /results: {e}", exc_info=True)
-        # Devolver error 500 si algo falla aquí es crítico
-        context = {"request": request, "submission_id": submission_id, "status": "critical_error", "error_message": "Error interno del servidor."}
-        return templates.TemplateResponse("results.html", context, status_code=500)
+#     except Exception as e:
+#         logger.error(f"[{submission_id}] Error inesperado en GET /results: {e}", exc_info=True)
+#         # Devolver error 500 si algo falla aquí es crítico
+#         context = {"request": request, "submission_id": submission_id, "status": "critical_error", "error_message": "Error interno del servidor."}
+#         return templates.TemplateResponse("results.html", context, status_code=500)
 
 
 @app.get("/")
