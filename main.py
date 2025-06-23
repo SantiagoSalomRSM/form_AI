@@ -420,8 +420,6 @@ async def handle_tally_webhook(payload: TallyWebhookPayload, background_tasks: B
     logger.info(f"[{submission_id}] Webhook recibido. Verificando Supabase (ID: {submission_id}).")
     logger.info(f"[{submission_id}] Event ID: {payload.eventId}, Event Type: {payload.eventType}")
 
-    logger.info(payload.data.fields) # Log para ver los campos del payload
-
     try:
         # Verificar si ya existe un estado final (success o error) o si aún está procesando
         # Usamos SET con NX (Not Exists) y GET para hacerlo atómico y evitar race conditions
@@ -439,6 +437,7 @@ async def handle_tally_webhook(payload: TallyWebhookPayload, background_tasks: B
         form_type = detect_form_type(payload)
         response = summarize_payload(payload)
         ai_preference = extract_ai_preference(payload)
+        logger.info(f"[{submission_id}] Form type detectado: {form_type}, AI preference: {ai_preference}")
         supabase_client.table("form_AI_DB").insert({
                 "submission_id": submission_id,
                 "status": STATUS_PROCESSING,
