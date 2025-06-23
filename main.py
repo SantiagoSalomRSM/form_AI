@@ -136,7 +136,7 @@ def generate_prompt(payload: TallyWebhookPayload, submission_id: str, form_type:
 
                         ## **Estructura del Resultado (Usa este formato Markdown exacto):**
 
-                        Por favor, genera el resultado utilizando la siguiente estructura, incluyendo los emojis y el formato en negrita (adapta todos los datos a los del formulario):
+                        Por favor, genera el resultado utilizando la siguiente estructura, incluyendo los emojis y el formato en negrita (adapta todos los datos a los del formulario y no escribas nada del estilo: De acuerdo, aquí tienes el resumen del análisis del formulario del CFO, listo para ser usado:):
 
                         ### 🚀 Gracias: Un Análisis Rápido de tu Situación
                         Agradecemos tu tiempo y transparencia al compartir tus desafíos. Identificamos una clara oportunidad para optimizar tus procesos, especialmente en la gestión de la tesorería y la implementación de un sistema EPM/CPM, que impulse la eficiencia y la toma de decisiones estratégicas en Banca.
@@ -194,7 +194,7 @@ def generate_prompt(payload: TallyWebhookPayload, submission_id: str, form_type:
 
                         ## **Estructura del Resultado (Usa este formato Markdown exacto):**
 
-                        Por favor, genera el resultado utilizando la siguiente estructura, incluyendo los emojis y el formato en negrita (adapta todos los datos a los del formulario):
+                        Por favor, genera el resultado utilizando la siguiente estructura, incluyendo los emojis y el formato en negrita (adapta todos los datos a los del formulario(adapta todos los datos a los del formulario y no escribas nada del estilo de: De acuerdo, aquí tienes el resumen del análisis del formulario del CFO, listo para ser usado:):):
 
                         ### 📋 Briefing de Oportunidad: [Industria del Cliente] - Análisis del CFO
 
