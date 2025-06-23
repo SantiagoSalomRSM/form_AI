@@ -142,17 +142,23 @@ def generate_prompt(payload: TallyWebhookPayload, submission_id: str, form_type:
                         ### 🚀 Gracias: Un Análisis Rápido de tu Situación
                         Agradecemos tu tiempo y transparencia al compartir tus desafíos. Identificamos una clara oportunidad para optimizar tus procesos, especialmente en la gestión de la tesorería y la implementación de un sistema EPM/CPM, que impulse la eficiencia y la toma de decisiones estratégicas en Banca.
 
+                        ---
+
                         ### 🔑 Desafíos Clave que Hemos Identificado
                         - A pesar de tener un cierre de período rápido (4 días) y una participación alta (10/10) en la definición tecnológica, la valoración (5/10) de la usabilidad del ERP y la necesidad de realizar "cuadres" en Excel sugieren oportunidades de mejora en la **integración y usabilidad del sistema**, impactando la eficiencia del equipo.
                         - La valoración (6/10) del nivel de automatización en el cierre y reporting, junto con la ausencia de un software de EPM/CPM y la gestión manual del flujo de caja, indican una necesidad de **automatizar los procesos de planificación financiera** y presupuestación, liberando recursos para análisis estratégico.
                         - La solicitud de "más inteligencia" para el sistema de reporting señala una oportunidad de mejorar la **capacidad analítica** y el acceso a datos oportunos (7/10 de autonomía del equipo), permitiendo decisiones basadas en datos más rápidas y efectivas.
                         - La mención de SOX como tema relevante de seguridad y control de riesgos refuerza la necesidad de **robustecer las políticas y controles de seguridad** de la información para proteger los datos financieros sensibles y asegurar el cumplimiento normativo.
+                        
+                        ---
 
                         ### 💡 Cómo Podemos Ayudar: Tu Camino a Seguir
                         - **Automatizar tu Planificación Financiera:** Implementamos soluciones de EPM/CPM a medida para automatizar y centralizar tus procesos de presupuestación, forecasting y gestión de la tesorería, permitiéndote reaccionar rápidamente a los cambios del mercado y optimizar el flujo de caja.
                         - **Integrar y Mejorar la Usabilidad de tus Sistemas:** Conectamos tus datos de diversas fuentes (ERP, bancos, etc.) en una única plataforma, mejorando la usabilidad de tus sistemas y eliminando la necesidad de recurrir a Excel para tareas como los "cuadres".
                         - **Potenciar el Análisis de Datos:** Agregamos capacidades de Business Intelligence avanzadas a tu sistema de reporting, permitiendo a tu equipo acceder a datos oportunos y tomar decisiones basadas en datos de manera más rápida y efectiva.
                         - **Fortalecer tu Cumplimiento SOX:** Evaluamos y reforzamos tus políticas de seguridad de la información, asegurando el cumplimiento de las regulaciones SOX y protegiendo tus datos financieros más sensibles.
+                        
+                        ---
 
                         ### 📞 Hablemos de tu Estrategia
                         Estos son desafíos comunes pero críticos en la ruta del crecimiento, especialmente en el sector bancario. La buena noticia es que tienen solución con el enfoque adecuado.
@@ -202,6 +208,8 @@ def generate_prompt(payload: TallyWebhookPayload, submission_id: str, form_type:
                         -   **Preparado para:** Equipo de Consulting
                         -   **Fuente:** Formulario de Diagnóstico
                         -   **Nivel de Oportunidad:** Alto
+                        
+                        ---
 
                         ### 👤 Perfil del Prospecto (CFO)
 
@@ -213,6 +221,8 @@ def generate_prompt(payload: TallyWebhookPayload, submission_id: str, form_type:
                         -   **Autonomía del Equipo (Datos):** 7/10 (Bueno, pero con margen de mejora).
                         -   **Nivel de Automatización (Cierre/Reporting):** 6/10 (Oportunidad clara).
                         -   **Tema de Seguridad Relevante:** Cumplimiento SOX.
+                        
+                        ---
 
                         ### 🎯 Puntos de Dolor y Ganchos de Venta
 
@@ -220,6 +230,8 @@ def generate_prompt(payload: TallyWebhookPayload, submission_id: str, form_type:
                         -   **Dependencia de Procesos Manuales:** La ausencia de un software EPM/CPM y la gestión manual del flujo de caja son ineficiencias críticas. Esto representa nuestro **principal ángulo de venta**: la automatización de la planificación financiera para liberar tiempo estratégico.
                         -   **Necesidad de Inteligencia de Negocio:** La petición explícita de "más inteligencia" para el reporting es una puerta de entrada directa para nuestras capacidades de BI. Quieren pasar de reportar el pasado a predecir el futuro.
                         -   **Presión Regulatoria (SOX):** La mención de SOX es un gancho de alto valor. Podemos posicionar nuestras soluciones no solo como una mejora de eficiencia, sino como una **herramienta para robustecer el control interno** y asegurar el cumplimiento.
+                        
+                        ---
 
                         ### 💡 Ángulo de Venta y Solución Propuesta
 
@@ -232,6 +244,8 @@ def generate_prompt(payload: TallyWebhookPayload, submission_id: str, form_type:
                         -   **Problema:** Riesgo de cumplimiento y seguridad (SOX).
                             -   **Nuestra Solución:** Evaluación y fortalecimiento de controles de acceso y políticas de seguridad dentro de la nueva plataforma.
                             -   **Argumento de Venta:** "Gana eficiencia y, al mismo tiempo, blinda tu operación financiera para cumplir con SOX con total tranquilidad".
+                        
+                        ---
 
                         ### ⚠️ Riesgos Potenciales y Próximos Pasos
 
@@ -259,7 +273,7 @@ def generate_prompt(payload: TallyWebhookPayload, submission_id: str, form_type:
             else:
                 value_str = str(value)
             prompt_parts.append(f"Pregunta: {label_str} - Respuesta: {value_str}")
-            
+
     else:
         logger.info(f"[{submission_id}] Otro tipo de formulario detectado. Procesando respuestas.")
 
