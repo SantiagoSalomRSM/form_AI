@@ -124,22 +124,33 @@ def detect_form_type(payload: TallyWebhookPayload) -> str:
             return "CFO_Form"
     return "Unknown"
 
-def detect_chosen_AI(payload: TallyWebhookPayload) -> str:
+def extract_ai_preference(payload: TallyWebhookPayload) -> str:
     """Detecta el AI elegido basándose en la primera label o key."""
+    ai_preference = "gemini"  # Valor por defecto
     if payload.data.fields:
-        first_label = payload.data.fields[0].label or payload.data.fields[0].key
-        if first_label.strip() == "¿Qué AI has elegido?":
-            return payload.data.fields[0].value.strip()
-    return "Unknown"
+        first_answer = payload.data.fields[0]
+        first_id = first_answer.value 
+        id_to_text = {opt.id: opt.text.lower() for opt in first_answer.options}
+        first_chosen = id_to_text.get(first_id, "")
+        if "Sí" in first_chosen:
+            second_answer = payload.data.fields[1]
+            second_id = second_answer.value
+            id_to_text = {opt.id: opt.text.lower() for opt in second_answer.options}
+            second_chosen = id_to_text.get(second_id, "")
+            if "DeepSeek" in second_chosen:
+                ai_preference = "deepseek"
+            elif "Gemini" in second_chosen:
+                ai_preference = "gemini"
+    return ai_preference
 
-def generate_prompt(payload: TallyWebhookPayload, submission_id: str, form_type: str) -> str:
-    """Genera un prompt para Gemini basado en el tipo de formulario."""
+def generate_prompt(payload: TallyWebhookPayload, submission_id: str, mode: str) -> str:
+    """Genera un prompt basado en el tipo de formulario."""
 
-    if form_type == "CFO_Form":
+    if mode == "CFO_Form":
         logger.info(f"[{submission_id}] Formulario CFO detectado. Procesando respuestas.")
 
         # --- Generación del Prompt (sin cambios) ---
-        prompt_parts = ["""# Prompt para Gemini: Analizar Formulario de CFO para Resumen de Seguimiento
+        prompt_parts = ["""# Prompt: Analizar Formulario de CFO para Resumen de Seguimiento
 
                         ## **Tu Rol y Objetivo:**
 
@@ -205,7 +216,7 @@ def generate_prompt(payload: TallyWebhookPayload, submission_id: str, form_type:
                 value_str = str(value)
             prompt_parts.append(f"Pregunta: {label_str} - Respuesta: {value_str}")
 
-    elif form_type == "consulting":
+    elif mode == "consulting":
         logger.info(f"[{submission_id}] Formulario CFO detectado. Procesando respuestas.")
 
         # --- Generación del Prompt (sin cambios) ---
@@ -410,7 +421,7 @@ async def handle_tally_webhook(payload: TallyWebhookPayload, background_tasks: B
     logger.info(f"[{submission_id}] Event ID: {payload.eventId}, Event Type: {payload.eventType}")
 
     logger.info(payload.data.fields) # Log para ver los campos del payload
-    
+
     try:
         # Verificar si ya existe un estado final (success o error) o si aún está procesando
         # Usamos SET con NX (Not Exists) y GET para hacerlo atómico y evitar race conditions
@@ -427,6 +438,7 @@ async def handle_tally_webhook(payload: TallyWebhookPayload, background_tasks: B
         # Extraer información relevante del formulario
         form_type = detect_form_type(payload)
         response = summarize_payload(payload)
+        ai_preference = extract_ai_preference(payload)
         supabase_client.table("form_AI_DB").insert({
                 "submission_id": submission_id,
                 "status": STATUS_PROCESSING,
