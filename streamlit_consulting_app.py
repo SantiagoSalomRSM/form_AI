@@ -43,7 +43,7 @@ except Exception as e:
 # """, unsafe_allow_html=True)
 
 
-LOGO_URL = "https://raw.githubusercontent.com/SantiagoSalomRSM/form_AI/master/images/RSM Standard Logo RGB.png" 
+LOGO_URL = "https://raw.githubusercontent.com/SantiagoSalomRSM/form_AI/master/images/RSM Standard Colour_White letters Logo RGB.png" 
 
 # Título y configuración de la página icono logo
 st.set_page_config(page_title="Análisis de Resultados del Formulario",
