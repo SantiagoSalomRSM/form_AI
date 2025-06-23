@@ -24,7 +24,7 @@ except Exception as e:
 
 
 # --- Streamlit App UI ---
-LOGO_URL = "https://raw.githubusercontent.com/SantiagoSalomRSM/form_AI/master/images/logo_rsm.jpg" 
+LOGO_URL = "https://raw.githubusercontent.com/SantiagoSalomRSM/form_AI/master/images/RSM Standard Logo RGB.png" 
 
 # Título y configuración de la página icono logo
 st.set_page_config(page_title="Análisis de Resultados del Formulario",
