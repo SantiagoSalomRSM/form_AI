@@ -24,6 +24,29 @@ except Exception as e:
 
 
 # --- Streamlit App UI ---
+# ...existing code...
+
+custom_css = """
+<style>
+body {
+    background-color: #f7f9fb;
+}
+.stApp {
+    font-family: 'Segoe UI', Arial, sans-serif;
+}
+h1, h2, h3, h4 {
+    color: #0072C6;
+}
+.stButton>button {
+    background-color: #0072C6;
+    color: white;
+    border-radius: 8px;
+    font-weight: bold;
+}
+</style>
+"""
+st.markdown(custom_css, unsafe_allow_html=True)
+# ...existing code...
 
 # Título y configuración de la página 
 st.set_page_config(page_title="Análisis de Resultados del Formulario",
@@ -98,6 +121,7 @@ hide_streamlit_style = """
     <style>
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
+    header {visibility: hidden;}
     </style>
 """
 st.markdown(hide_streamlit_style, unsafe_allow_html=True)
