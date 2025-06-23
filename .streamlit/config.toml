@@ -13,4 +13,4 @@ textColor = "#262730"
 # Font family for all text in the app, except code blocks.
 # We're using a professional, modern font stack.
 # "Inter" is a great choice for UIs.
-font = "'Inter'
+font = 'Inter'
