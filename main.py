@@ -379,6 +379,7 @@ async def generate_deepseek_response(submission_id: str, prompt: str, prompt_typ
 
     logger.info(f"[{submission_id}] Tarea DeepSeek finalizada.")
 
+# --- Lógica para interactuar con OpenAI ---
 async def generate_openai_response(submission_id: str, prompt: str, prompt_type: str):
     """Genera una respuesta de OpenAI y actualiza Supabase con el resultado."""
     logger.info(f"[{submission_id}] Iniciando tarea OpenAI.")
@@ -453,8 +454,6 @@ async def handle_tally_webhook(payload: TallyWebhookPayload, background_tasks: B
     logger.info(f"[{submission_id}] Webhook recibido. Verificando Supabase (ID: {submission_id}).")
     logger.info(f"[{submission_id}] Event ID: {payload.eventId}, Event Type: {payload.eventType}")
 
-    logger.info(payload.data.fields)
-
     try:
         # Verificar si ya existe un estado final (success o error) o si aún está procesando
         # Usamos SET con NX (Not Exists) y GET para hacerlo atómico y evitar race conditions
@@ -519,7 +518,7 @@ async def handle_tally_webhook(payload: TallyWebhookPayload, background_tasks: B
             # --- Iniciar Tarea en Segundo Plano (después de respuesta cliente) ---
             background_tasks.add_task(generate_deepseek_response, submission_id, prompt_consulting, "consulting")
             logger.info(f"[{submission_id}] Tarea de DeepSeek iniciada en segundo plano.")
-            
+
         elif MODEL == "openai":
             # --- Generación del Prompt modularizada ---
             prompt_cliente = generate_prompt(payload, submission_id, form_type)
