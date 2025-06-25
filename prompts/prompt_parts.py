@@ -46,6 +46,7 @@ Para empezar a diseñar un plan de acción concreto para tu equipo, simplemente 
 
 ## **Datos del Formulario del CFO para Analizar:**"""
 
+
 # ------------------
 
 CONSULTING_PROMPT = """# Prompt para Gemini: Generar Briefing Interno de Oportunidad de Venta (Análisis de Formulario de CFO)
