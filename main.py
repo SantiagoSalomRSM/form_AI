@@ -291,7 +291,7 @@ async def generate_deepseek_response(submission_id: str, prompt: str, prompt_typ
     try:
         # --- Llamada a DeepSeek API (lógica sin cambios) ---
         response = client.chat.completions.create(
-            model="deepseek-chat-1",
+            model="deepseek-chat",
             messages=[{"role": "user", "content": prompt}],
             max_tokens=1000
         )
