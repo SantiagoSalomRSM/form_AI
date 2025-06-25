@@ -378,6 +378,8 @@ async def handle_tally_webhook(payload: TallyWebhookPayload, background_tasks: B
     logger.info(f"[{submission_id}] Webhook recibido. Verificando Supabase (ID: {submission_id}).")
     logger.info(f"[{submission_id}] Event ID: {payload.eventId}, Event Type: {payload.eventType}")
 
+    logger.info(payload.data.fields)
+    
     try:
         # Verificar si ya existe un estado final (success o error) o si aún está procesando
         # Usamos SET con NX (Not Exists) y GET para hacerlo atómico y evitar race conditions
