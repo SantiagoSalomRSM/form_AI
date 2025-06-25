@@ -15,10 +15,10 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 load_dotenv()
 
-# Elegir el modelo a usar
+# --- Elegir el modelo a usar ---
 # MODEL = "gemini" 
-MODEL = "deepseek" 
-# MODEL = "openai" 
+# MODEL = "deepseek" 
+MODEL = "openai" 
 
 if MODEL == "gemini":
     logger.info("Usando modelo Gemini para la generación de contenido.")
@@ -32,7 +32,6 @@ if MODEL == "gemini":
         except Exception as e:
             logger.error(f"Error configurando el cliente de Gemini: {e}")
     GEMINI_MODEL_NAME = "gemini-2.0-flash" # Use a valid model
-
 elif MODEL == "deepseek":
     logger.info("Usando modelo DeepSeek para la generación de contenido.")
     DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
@@ -44,6 +43,17 @@ elif MODEL == "deepseek":
             logger.info("Cliente de DeepSeek configurado correctamente.")
         except Exception as e:
             logger.error(f"Error configurando el cliente de DeepSeek: {e}")
+elif MODEL == "openai":
+    logger.info("Usando modelo OpenAI para la generación de contenido.")
+    OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+    if not OPENAI_API_KEY:
+        logger.error("Error: La variable de entorno OPENAI_API_KEY no está configurada.")
+    else:
+        try:
+            client = OpenAI(api_key=OPENAI_API_KEY)
+            logger.info("Cliente de OpenAI configurado correctamente.")
+        except Exception as e:
+            logger.error(f"Error configurando el cliente de OpenAI: {e}")
 
 # --- Configuración Supabase ---
 SUPABASE_URL: str = os.getenv("SUPABASE_URL")
@@ -68,6 +78,7 @@ STATUS_ERROR = "error"
 STATUS_NOT_FOUND = "not_found" # Estado implícito si no existe la key
 GEMINI_ERROR_MARKER = "ERROR_PROCESSING_GEMINI" # Marcador en el resultado
 DEEPSEEK_ERROR_MARKER = "ERROR_PROCESSING_DEEPSEEK" # Marcador en el resultado
+OPENAI_ERROR_MARKER = "ERROR_PROCESSING_OPENAI" # Marcador en el resultado
 
 # --- App FastAPI ---
 app = FastAPI(title="Tally Webhook Processor")
@@ -121,7 +132,7 @@ def detect_form_type(payload: TallyWebhookPayload) -> str:
     """Detecta el form type basándose en la primera label o key."""
     type = "CFO_Form"  # Valor por defecto
     if payload.data.fields:
-        first_label = payload.data.fields[2].label 
+        first_label = payload.data.fields[0].label 
         if first_label.strip() == "¿De qué sector es tu empresa o grupo?":
             return "CFO_Form"
     return type
@@ -368,7 +379,71 @@ async def generate_deepseek_response(submission_id: str, prompt: str, prompt_typ
 
     logger.info(f"[{submission_id}] Tarea DeepSeek finalizada.")
 
+async def generate_openai_response(submission_id: str, prompt: str, prompt_type: str):
+    """Genera una respuesta de OpenAI y actualiza Supabase con el resultado."""
+    logger.info(f"[{submission_id}] Iniciando tarea OpenAI.")
+    
+    try:
+        # --- Llamada a OpenAI API ---
+        response = client.chat.completions.create(
+            model="gpt-4.1-mini",
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=1000
+        )
+        result_text = response.choices[0].message.content if response.choices else None
 
+        # --- Actualizar Supabase con el resultado ---
+        if result_text:
+            if prompt_type == "consulting":
+                try:
+                    supabase_client.table("form_AI_DB").update({
+                        "submission_id": submission_id,
+                        "status": STATUS_SUCCESS,
+                        "result_consulting": result_text
+                    }).eq("submission_id", submission_id).execute()
+                    logger.info(f"[{submission_id}] Resultado guardado en Supabase.")
+                    logger.info(f"[{submission_id}] Estado '{STATUS_SUCCESS}' y resultado guardados en Supabase.")
+                except Exception as e:
+                    logger.error(f"[{submission_id}] Error guardando resultado en Supabase: {e}")
+            else:
+                try:
+                    supabase_client.table("form_AI_DB").update({
+                        "submission_id": submission_id,
+                        "status": STATUS_SUCCESS,
+                        "result_client": result_text
+                    }).eq("submission_id", submission_id).execute()
+                    logger.info(f"[{submission_id}] Resultado guardado en Supabase.")
+                    logger.info(f"[{submission_id}] Estado '{STATUS_SUCCESS}' y resultado guardados en Supabase.")
+                except Exception as e:
+                    logger.error(f"[{submission_id}] Error guardando resultado en Supabase: {e}")
+        else:
+            # Si no hay texto válido, guardar error
+            try:
+                supabase_client.table("form_AI_DB").update({
+                    "submission_id": submission_id,
+                    "status": STATUS_ERROR,
+                    "result_client": OPENAI_ERROR_MARKER,
+                    "result_consulting": OPENAI_ERROR_MARKER
+                }).eq("submission_id", submission_id).execute()
+                logger.warning(f"[{submission_id}] Estado '{STATUS_ERROR}' y marcador guardados en Supabase (sin texto válido).")
+            except Exception as e:
+                logger.error(f"[{submission_id}] Error guardando marcador de error en Supabase: {e}")
+
+    except Exception as e:
+        logger.error(f"[{submission_id}] Excepción durante procesamiento OpenAI: {e}", exc_info=True) # Log con traceback
+        try:
+            # Intenta guardar el estado de error incluso si OpenAI falló
+            supabase_client.table("form_AI_DB").update({
+                "submission_id": submission_id,
+                "status": STATUS_ERROR,
+                "result_client": f"Error interno: {e}",
+                "result_consulting": f"Error interno: {e}"
+            }).eq("submission_id", submission_id).execute()
+            logger.warning(f"[{submission_id}] Estado '{STATUS_ERROR}' guardado en Supabase debido a excepción.")
+        except Exception as e:
+            logger.error(f"[{submission_id}] Error guardando estado de error en Supabase: {e}")
+
+    logger.info(f"[{submission_id}] Tarea OpenAI finalizada.")
 # --- Endpoints FastAPI ---
 
 @app.post("/webhook")
@@ -379,7 +454,7 @@ async def handle_tally_webhook(payload: TallyWebhookPayload, background_tasks: B
     logger.info(f"[{submission_id}] Event ID: {payload.eventId}, Event Type: {payload.eventType}")
 
     logger.info(payload.data.fields)
-    
+
     try:
         # Verificar si ya existe un estado final (success o error) o si aún está procesando
         # Usamos SET con NX (Not Exists) y GET para hacerlo atómico y evitar race conditions
@@ -444,6 +519,23 @@ async def handle_tally_webhook(payload: TallyWebhookPayload, background_tasks: B
             # --- Iniciar Tarea en Segundo Plano (después de respuesta cliente) ---
             background_tasks.add_task(generate_deepseek_response, submission_id, prompt_consulting, "consulting")
             logger.info(f"[{submission_id}] Tarea de DeepSeek iniciada en segundo plano.")
+            
+        elif MODEL == "openai":
+            # --- Generación del Prompt modularizada ---
+            prompt_cliente = generate_prompt(payload, submission_id, form_type)
+            logger.debug(f"[{submission_id}] Prompt para OpenAI: {prompt_cliente[:200]}...")
+
+            # --- Iniciar Tarea en Segundo Plano ---
+            background_tasks.add_task(generate_openai_response, submission_id, prompt_cliente, form_type)
+            logger.info(f"[{submission_id}] Tarea de OpenAI iniciada en segundo plano.")
+
+            # --- Generación del Prompt para consultoría ---
+            prompt_consulting = generate_prompt(payload, submission_id, "consulting")
+            logger.debug(f"[{submission_id}] Prompt para OpenAI (Consulting): {prompt_consulting[:200]}...")
+
+            # --- Iniciar Tarea en Segundo Plano (después de respuesta cliente) ---
+            background_tasks.add_task(generate_openai_response, submission_id, prompt_consulting, "consulting")
+            logger.info(f"[{submission_id}] Tarea de OpenAI iniciada en segundo plano.")
 
         return {"status": "ok", "message": "Processing started"}
     
