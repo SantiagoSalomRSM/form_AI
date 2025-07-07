@@ -415,6 +415,15 @@ async def generate_openai_response(submission_id: str, prompt: str, prompt_type:
                     }).eq("submission_id", submission_id).execute()
                     logger.info(f"[{submission_id}] Resultado guardado en Supabase.")
                     logger.info(f"[{submission_id}] Estado '{STATUS_SUCCESS}' y resultado guardados en Supabase.")
+                
+                    # --- Generación del Prompt para consultoría después de generar cliente ---
+                    prompt_consulting = generate_prompt(payload, submission_id, "consulting")
+                    logger.debug(f"[{submission_id}] Prompt para OpenAI (Consulting): {prompt_consulting[:200]}...")
+
+                    # --- Iniciar Tarea después de respuesta cliente ---
+                    await generate_openai_response(submission_id, prompt_consulting, "consulting", payload)
+                    logger.info(f"[{submission_id}] Tarea de OpenAI iniciada en segundo plano.")
+
                 except Exception as e:
                     logger.error(f"[{submission_id}] Error guardando resultado en Supabase: {e}")
         else:
@@ -446,18 +455,7 @@ async def generate_openai_response(submission_id: str, prompt: str, prompt_type:
 
     logger.info(f"[{submission_id}] Tarea OpenAI finalizada.")
 
-    # --- Generación del Prompt para consultoría ---
-    if prompt_type != "consulting":
-        prompt_consulting = generate_prompt(payload, submission_id, "consulting")
-        logger.debug(f"[{submission_id}] Prompt para OpenAI (Consulting): {prompt_consulting[:200]}...")
-
-        # --- Iniciar Tarea después de respuesta cliente ---
-        await generate_openai_response(submission_id, prompt_consulting, "consulting", payload)
-        logger.info(f"[{submission_id}] Tarea de OpenAI iniciada en segundo plano.")
-
-
 # --- Endpoints FastAPI ---
-
 @app.post("/webhook")
 async def handle_tally_webhook(payload: TallyWebhookPayload, background_tasks: BackgroundTasks):
     # ... (keep your existing webhook handler) ...
