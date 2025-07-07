@@ -387,7 +387,7 @@ async def generate_openai_response(submission_id: str, prompt: str, prompt_type:
     try:
         # --- Llamada a OpenAI API ---
         response = client.chat.completions.create(
-            model="gpt-4.1-mini",
+            model="gpt-4.1-nano",
             messages=[{"role": "user", "content": prompt}],
             max_tokens=1000
         )
