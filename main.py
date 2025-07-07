@@ -398,10 +398,16 @@ async def generate_openai_response(submission_id: str, prompt: str, prompt_type:
             if prompt_type == "consulting":
                 try:
                     supabase_client.table("form_AI_DB").update({
-                        "submission_id": submission_id,
-                        "status": STATUS_SUCCESS,
                         "result_consulting": result_text
                     }).eq("submission_id", submission_id).execute()
+                    row = supabase_client.table("form_AI_DB").select("result_client, result_consulting").eq("submission_id", submission_id).execute()
+                    if row.data:
+                        client_result = row.data[0].get("result_client")
+                        consulting_result = row.data[0].get("result_consulting")
+                        if client_result and consulting_result:
+                            supabase_client.table("form_AI_DB").update({
+                                "status": STATUS_SUCCESS
+                            }).eq("submission_id", submission_id).execute()
                     logger.info(f"[{submission_id}] Resultado guardado en Supabase.")
                     logger.info(f"[{submission_id}] Estado '{STATUS_SUCCESS}' y resultado guardados en Supabase.")
                 except Exception as e:
@@ -409,10 +415,16 @@ async def generate_openai_response(submission_id: str, prompt: str, prompt_type:
             else:
                 try:
                     supabase_client.table("form_AI_DB").update({
-                        "submission_id": submission_id,
-                        "status": STATUS_SUCCESS,
                         "result_client": result_text
                     }).eq("submission_id", submission_id).execute()
+                    row = supabase_client.table("form_AI_DB").select("result_client, result_consulting").eq("submission_id", submission_id).execute()
+                    if row.data:
+                        client_result = row.data[0].get("result_client")
+                        consulting_result = row.data[0].get("result_consulting")
+                        if client_result and consulting_result:
+                            supabase_client.table("form_AI_DB").update({
+                                "status": STATUS_SUCCESS
+                            }).eq("submission_id", submission_id).execute()
                     logger.info(f"[{submission_id}] Resultado guardado en Supabase.")
                     logger.info(f"[{submission_id}] Estado '{STATUS_SUCCESS}' y resultado guardados en Supabase.")
                 except Exception as e:
