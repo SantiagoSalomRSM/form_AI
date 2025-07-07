@@ -380,7 +380,7 @@ async def generate_deepseek_response(submission_id: str, prompt: str, prompt_typ
     logger.info(f"[{submission_id}] Tarea DeepSeek finalizada.")
 
 # --- Lógica para interactuar con OpenAI ---
-async def generate_openai_response(submission_id: str, prompt: str, prompt_type: str):
+async def generate_openai_response(submission_id: str, prompt: str, prompt_type: str, payload: TallyWebhookPayload):
     """Genera una respuesta de OpenAI y actualiza Supabase con el resultado."""
     logger.info(f"[{submission_id}] Iniciando tarea OpenAI.")
     
@@ -445,6 +445,16 @@ async def generate_openai_response(submission_id: str, prompt: str, prompt_type:
             logger.error(f"[{submission_id}] Error guardando estado de error en Supabase: {e}")
 
     logger.info(f"[{submission_id}] Tarea OpenAI finalizada.")
+
+    # --- Generación del Prompt para consultoría ---
+    prompt_consulting = generate_prompt(payload, submission_id, "consulting")
+    logger.debug(f"[{submission_id}] Prompt para OpenAI (Consulting): {prompt_consulting[:200]}...")
+
+    # --- Iniciar Tarea después de respuesta cliente ---
+    await generate_openai_response(submission_id, prompt_consulting, "consulting", payload)
+    logger.info(f"[{submission_id}] Tarea de OpenAI iniciada en segundo plano.")
+
+
 # --- Endpoints FastAPI ---
 
 @app.post("/webhook")
@@ -528,13 +538,13 @@ async def handle_tally_webhook(payload: TallyWebhookPayload, background_tasks: B
             background_tasks.add_task(generate_openai_response, submission_id, prompt_cliente, form_type)
             logger.info(f"[{submission_id}] Tarea de OpenAI iniciada en segundo plano.")
 
-            # --- Generación del Prompt para consultoría ---
-            prompt_consulting = generate_prompt(payload, submission_id, "consulting")
-            logger.debug(f"[{submission_id}] Prompt para OpenAI (Consulting): {prompt_consulting[:200]}...")
+            # # --- Generación del Prompt para consultoría ---
+            # prompt_consulting = generate_prompt(payload, submission_id, "consulting")
+            # logger.debug(f"[{submission_id}] Prompt para OpenAI (Consulting): {prompt_consulting[:200]}...")
 
-            # --- Iniciar Tarea en Segundo Plano (después de respuesta cliente) ---
-            background_tasks.add_task(generate_openai_response, submission_id, prompt_consulting, "consulting")
-            logger.info(f"[{submission_id}] Tarea de OpenAI iniciada en segundo plano.")
+            # # --- Iniciar Tarea en Segundo Plano (después de respuesta cliente) ---
+            # background_tasks.add_task(generate_openai_response, submission_id, prompt_consulting, "consulting")
+            # logger.info(f"[{submission_id}] Tarea de OpenAI iniciada en segundo plano.")
 
         return {"status": "ok", "message": "Processing started"}
     
