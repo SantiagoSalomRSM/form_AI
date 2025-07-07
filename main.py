@@ -18,7 +18,7 @@ load_dotenv()
 # --- Elegir el modelo a usar ---
 # MODEL = "gemini" 
 # MODEL = "deepseek" 
-MODEL = "gemini" 
+MODEL = "openai" 
 
 if MODEL == "gemini":
     logger.info("Usando modelo Gemini para la generación de contenido.")
@@ -389,7 +389,7 @@ async def generate_openai_response(submission_id: str, prompt: str, prompt_type:
         response = client.chat.completions.create(
             model="gpt-4.1",
             messages=[{"role": "user", "content": prompt}],
-            max_tokens=1000
+            max_tokens=10000
         )
         result_text = response.choices[0].message.content if response.choices else None
 
