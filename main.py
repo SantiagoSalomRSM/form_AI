@@ -110,7 +110,6 @@ class UpdateResultPayload(BaseModel):
     new_result: str
     reason: Optional[str] = None
 
-# Función para generar un resumen legible del payload de Tally
 def summarize_payload(payload: TallyWebhookPayload) -> str:
     """Genera un resumen entendible del Tally payload."""
     lines = ["Respuestas:"]
@@ -127,7 +126,6 @@ def summarize_payload(payload: TallyWebhookPayload) -> str:
         lines.append(f"- {label}: {value_str}")
     return "\n".join(lines)
 
-# Función para detectar el tipo de formulario
 def detect_form_type(payload: TallyWebhookPayload) -> str:
     """Detecta el form type basándose en la primera label o key."""
     type = "CFO_Form"  # Valor por defecto
@@ -138,15 +136,14 @@ def detect_form_type(payload: TallyWebhookPayload) -> str:
     return type
 
 def load_prompt_from_file(prompt_name: str) -> str:
-    path = f"prompts/{prompt_name}.txt"
+    """Carga un prompt desde un archivo en la carpeta de prompts."""
+    path = f"prompts/{prompt_name}"
     try:
         with open(path, "r", encoding="utf-8") as f:
             return f.read()
     except FileNotFoundError:
         return f"Error: Prompt file '{path}' not found."
     
-
-# Función para generar el prompt basado en el tipo de formulario
 def generate_prompt(payload: TallyWebhookPayload, submission_id: str, mode: str) -> str:
     """Genera un prompt basado en el tipo de formulario."""
 
@@ -458,7 +455,6 @@ async def generate_openai_response(submission_id: str, prompt: str, prompt_type:
             logger.error(f"[{submission_id}] Error guardando estado de error en Supabase: {e}")
     
     logger.info(f"[{submission_id}] Tarea OpenAI finalizada.")
-
 
 # --- Endpoints FastAPI ---
 @app.post("/webhook")
