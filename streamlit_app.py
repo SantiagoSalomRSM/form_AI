@@ -70,7 +70,7 @@ try:
 
         for percent_complete in range(100):
             # take 5 seconds to simulate processing
-            time.sleep(0.2)  # Simula el tiempo de procesamiento
+            time.sleep(0.05)  # Simula el tiempo de procesamiento
             my_bar.progress(percent_complete, text=progress_text)
         
         my_bar.empty()
