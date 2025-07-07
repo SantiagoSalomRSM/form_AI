@@ -7,7 +7,7 @@ import google.generativeai as genai
 from dotenv import load_dotenv
 from supabase import create_client, Client
 from openai import OpenAI
-from prompts.prompt_parts import CONSULTING_PROMPT, CFO_FORM_PROMPT
+# from prompts.prompt_parts import CONSULTING_PROMPT, CFO_FORM_PROMPT
 from openai import OpenAIError, APIError
 
 # --- Configuración Inicial ---
@@ -145,6 +145,9 @@ def generate_prompt(payload: TallyWebhookPayload, submission_id: str, mode: str)
         logger.info(f"[{submission_id}] Formulario CFO detectado. Procesando respuestas.")
 
         # --- Generación del Prompt ---
+        # Extraer el prompt de la base de datos
+        prompt_data = supabase_client.table("prompts_DB").select("prompt").eq("prompt_type", "CFO_FORM_PROMPT").execute()
+        CFO_FORM_PROMPT = prompt_data.data['prompt'] if prompt_data.data else "Error: Prompt no encontrado en la base de datos."
         prompt_parts = [CFO_FORM_PROMPT]
 
         # ... ( lógica para construir el prompt con payload.data.fields) ... 
@@ -169,6 +172,9 @@ def generate_prompt(payload: TallyWebhookPayload, submission_id: str, mode: str)
         logger.info(f"[{submission_id}] Formulario CFO detectado. Procesando respuestas.")
 
         # --- Generación del Prompt ---
+        # Extraer el prompt de la base de datos
+        prompt_data = supabase_client.table("prompts_DB").select("prompt").eq("prompt_type", "CONSULTING_PROMPT").execute()
+        CONSULTING_PROMPT = prompt_data.data['prompt'] if prompt_data.data else "Error: Prompt no encontrado en la base de datos."
         prompt_parts = [CONSULTING_PROMPT]
 
         # ... ( lógica para construir el prompt con payload.data.fields) ... 
