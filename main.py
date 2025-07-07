@@ -128,10 +128,10 @@ def summarize_payload(payload: TallyWebhookPayload) -> str:
 
 def detect_form_type(payload: TallyWebhookPayload) -> str:
     """Detecta el form type basándose en la primera label o key."""
-    type = "CFO_Form"  # Valor por defecto
+    type = "unknown"  # Valor por defecto
     if payload.data.fields:
         first_label = payload.data.fields[0].label 
-        if first_label.strip() == "¿De qué sector es tu empresa o grupo?":
+        if first_label.strip() == '¿De qué sector es tu empresa o grupo?\n':
             return "CFO_Form"
     return type
 
