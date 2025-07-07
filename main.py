@@ -145,7 +145,7 @@ def generate_prompt(payload: TallyWebhookPayload, submission_id: str, mode: str)
         logger.info(f"[{submission_id}] Formulario CFO detectado. Procesando respuestas.")
 
         # --- Generación del Prompt ---
-        # Extraer el prompt de la base de datos
+        # Extraer el prompt de la carpeta en github
         prompt_data = supabase_client.table("prompts_DB").select("prompt").eq("prompt_type", "CFO_FORM_PROMPT").execute()
         logger.info(f"[{submission_id}] Prompt data: {prompt_data.data[0]}")
         CFO_FORM_PROMPT = prompt_data.data['prompt'] if prompt_data.data else "Error: Prompt no encontrado en la base de datos."
