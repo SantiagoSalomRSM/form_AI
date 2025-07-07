@@ -155,7 +155,7 @@ def generate_prompt(payload: TallyWebhookPayload, submission_id: str, mode: str)
 
         # --- Generación del Prompt ---
         # Extraer el prompt de la carpeta de prompts
-        prompt_text = load_prompt_from_file("CFO_FORM_PROMPT.txt")
+        prompt_text = load_prompt_from_file("CFO_FORM_PROMPT")
         prompt_parts = [prompt_text]
 
         # ... ( lógica para construir el prompt con payload.data.fields) ... 
@@ -181,7 +181,7 @@ def generate_prompt(payload: TallyWebhookPayload, submission_id: str, mode: str)
 
         # --- Generación del Prompt ---
         # Extraer el prompt de la carpeta de prompts
-        prompt_text = load_prompt_from_file("CONSULTING_PROMPT.txt")
+        prompt_text = load_prompt_from_file("CONSULTING_PROMPT")
         prompt_parts = [prompt_text]
 
         # ... ( lógica para construir el prompt con payload.data.fields) ... 
