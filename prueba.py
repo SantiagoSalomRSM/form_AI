@@ -9,7 +9,7 @@ client = OpenAI(api_key=API_KEY)
 
 response = client.responses.create(
     model="gpt-4.1-nano",
-    input="explain in 10 sentences the formation of the earth"
+    input="explain in 10 sentences the extinction of dinosaurs",
 )
 
 print(response.output_text)
