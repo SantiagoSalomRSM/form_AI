@@ -18,7 +18,7 @@ load_dotenv()
 # --- Elegir el modelo a usar ---
 # MODEL = "gemini" 
 # MODEL = "deepseek" 
-MODEL = "gemini" 
+MODEL = "openai" 
 
 if MODEL == "gemini":
     logger.info("Usando modelo Gemini para la generación de contenido.")
