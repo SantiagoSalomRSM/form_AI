@@ -443,8 +443,13 @@ async def generate_openai_response(submission_id: str, prompt: str, prompt_type:
             logger.warning(f"[{submission_id}] Estado '{STATUS_ERROR}' guardado en Supabase debido a excepción.")
         except Exception as e:
             logger.error(f"[{submission_id}] Error guardando estado de error en Supabase: {e}")
-
+    
+    if prompt_type != "consulting" and result_text:
+        prompt_consulting = generate_prompt(payload, submission_id, "consulting")
+        await generate_openai_response(submission_id, prompt_consulting, "consulting", payload)
+    
     logger.info(f"[{submission_id}] Tarea OpenAI finalizada.")
+
 
 # --- Endpoints FastAPI ---
 @app.post("/webhook")
