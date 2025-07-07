@@ -131,7 +131,7 @@ def detect_form_type(payload: TallyWebhookPayload) -> str:
     type = "unknown"  # Valor por defecto
     if payload.data.fields:
         first_label = payload.data.fields[0].label 
-        if first_label.strip() == '¿De qué sector es tu empresa o grupo?\n':
+        if first_label.strip() == '¿De qué sector es tu empresa o grupo?':
             return "CFO_Form"
     return type
 
