@@ -9,5 +9,5 @@ client = OpenAI(api_key=API_KEY)
 
 response = client.responses.create(
     model="gpt-4.1",
-    input="in my project i have a prompt generator as a prompt.py file, that's concatenated to a certain info and then sent to the model. i want to know if the prompt can be modified "
+    input="explain etinction of dinosaurs")
 print(response.output_text)

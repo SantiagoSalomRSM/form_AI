@@ -137,6 +137,15 @@ def detect_form_type(payload: TallyWebhookPayload) -> str:
             return "CFO_Form"
     return type
 
+def load_prompt_from_file(prompt_name: str) -> str:
+    path = f"prompts/{prompt_name}.txt"
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            return f.read()
+    except FileNotFoundError:
+        return f"Error: Prompt file '{path}' not found."
+    
+
 # Función para generar el prompt basado en el tipo de formulario
 def generate_prompt(payload: TallyWebhookPayload, submission_id: str, mode: str) -> str:
     """Genera un prompt basado en el tipo de formulario."""
@@ -145,11 +154,9 @@ def generate_prompt(payload: TallyWebhookPayload, submission_id: str, mode: str)
         logger.info(f"[{submission_id}] Formulario CFO detectado. Procesando respuestas.")
 
         # --- Generación del Prompt ---
-        # Extraer el prompt de la carpeta en github
-        prompt_data = supabase_client.table("prompts_DB").select("prompt").eq("prompt_type", "CFO_FORM_PROMPT").execute()
-        logger.info(f"[{submission_id}] Prompt data: {prompt_data.data[0]}")
-        CFO_FORM_PROMPT = prompt_data.data['prompt'] if prompt_data.data else "Error: Prompt no encontrado en la base de datos."
-        prompt_parts = [CFO_FORM_PROMPT]
+        # Extraer el prompt de la carpeta de prompts
+        prompt_text = load_prompt_from_file("CFO_FORM_PROMPT.txt")
+        prompt_parts = [prompt_text]
 
         # ... ( lógica para construir el prompt con payload.data.fields) ... 
         for field in payload.data.fields:
@@ -173,10 +180,9 @@ def generate_prompt(payload: TallyWebhookPayload, submission_id: str, mode: str)
         logger.info(f"[{submission_id}] Formulario CFO detectado. Procesando respuestas.")
 
         # --- Generación del Prompt ---
-        # Extraer el prompt de la base de datos
-        prompt_data = supabase_client.table("prompts_DB").select("prompt").eq("prompt_type", "CONSULTING_PROMPT").execute()
-        CONSULTING_PROMPT = prompt_data.data['prompt'] if prompt_data.data else "Error: Prompt no encontrado en la base de datos."
-        prompt_parts = [CONSULTING_PROMPT]
+        # Extraer el prompt de la carpeta de prompts
+        prompt_text = load_prompt_from_file("CONSULTING_PROMPT.txt")
+        prompt_parts = [prompt_text]
 
         # ... ( lógica para construir el prompt con payload.data.fields) ... 
         for field in payload.data.fields:
