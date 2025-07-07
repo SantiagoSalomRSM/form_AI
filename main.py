@@ -18,7 +18,7 @@ load_dotenv()
 # --- Elegir el modelo a usar ---
 # MODEL = "gemini" 
 # MODEL = "deepseek" 
-MODEL = "gemini" 
+MODEL = "openai" 
 
 if MODEL == "gemini":
     logger.info("Usando modelo Gemini para la generación de contenido.")
@@ -525,7 +525,7 @@ async def handle_tally_webhook(payload: TallyWebhookPayload, background_tasks: B
             logger.debug(f"[{submission_id}] Prompt para OpenAI: {prompt_cliente[:200]}...")
 
             # --- Iniciar Tarea en Segundo Plano ---
-            background_tasks.add_task(generate_openai_response, submission_id, prompt_cliente, form_type)
+            background_tasks.add_task(generate_openai_response, submission_id, prompt_cliente, form_type, payload)
             logger.info(f"[{submission_id}] Tarea de OpenAI iniciada en segundo plano.")
 
             # # --- Generación del Prompt para consultoría ---
