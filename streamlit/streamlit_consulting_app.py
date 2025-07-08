@@ -22,27 +22,6 @@ try:
 except Exception as e:
     raise ConnectionError(f"No se pudo conectar a Supabase: {e}") from e
 
-
-# --- Streamlit App UI ---
-# # Cargar la fuente Prelo desde un archivo base64
-# with open("fonts/prelo_base64.txt", "r") as f:
-#     prelo_base64 = f.read().replace('\n', '')
-
-# st.markdown(f"""
-# <style>
-# @font-face {{
-#   font-family: 'Prelo';
-#   src: url(data:font/otf;base64,{prelo_base64}) format('opentype');
-#   font-weight: normal;
-#   font-style: normal;
-# }}
-# html, body, [class*="st-"] {{
-#     font-family: 'Prelo', 'Segoe UI', Arial, sans-serif !important;
-# }}
-# </style>
-# """, unsafe_allow_html=True)
-
-
 LOGO_URL = "https://raw.githubusercontent.com/SantiagoSalomRSM/form_AI/master/images/RSM Standard Logo RGB.png" 
 
 # Título y configuración de la página icono logo
@@ -55,7 +34,7 @@ col1, col2, col3 = st.columns([1, 1, 1])
 with col2:
     st.image(
         LOGO_URL,
-        use_container_width=True, 
+        # use_container_width=True, 
     )
 
 #st.title("Análisis de Resultados del Formulario")
