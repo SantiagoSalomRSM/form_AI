@@ -29,6 +29,7 @@ LOGO_URL = "https://raw.githubusercontent.com/SantiagoSalomRSM/form_AI/master/im
 
 # Título y configuración de la página auotmatica para dispositivo móvil 
 st.set_page_config(page_title="Análisis de Resultados del Formulario",
+                   layout="centered",  # Centrar el contenido
                    page_icon=LOGO_URL)
 
 
