@@ -98,6 +98,7 @@ class TallyField(BaseModel):
 class TallyResponseData(BaseModel):
     responseId: str
     submissionId: str
+    formName: str
     fields: List[TallyField]
 
 class TallyWebhookPayload(BaseModel):
@@ -459,7 +460,7 @@ async def generate_openai_response(submission_id: str, prompt: str, prompt_type:
 # --- Endpoints FastAPI ---
 @app.post("/webhook")
 async def handle_tally_webhook(payload: TallyWebhookPayload, background_tasks: BackgroundTasks):
-    # ... (keep your existing webhook handler) ...
+
     submission_id = payload.data.submissionId
     logger.info(f"[{submission_id}] Webhook recibido. Verificando Supabase (ID: {submission_id}).")
     logger.info(f"[{submission_id}] Event ID: {payload.eventId}, Event Type: {payload.eventType}")
