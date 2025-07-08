@@ -147,64 +147,16 @@ def load_prompt_from_file(prompt_name: str) -> str:
     
 def generate_prompt(payload: TallyWebhookPayload, submission_id: str, mode: str) -> str:
     """Genera un prompt basado en el tipo de formulario."""
+  
+    logger.info(f"[{submission_id}] Generando Prompt.")
 
-    if mode == "CFO_Form":
-        logger.info(f"[{submission_id}] Formulario CFO detectado. Procesando respuestas.")
-
-        # --- Generación del Prompt ---
-        # Extraer el prompt de la carpeta de prompts
-        prompt_text = load_prompt_from_file("CFO_FORM_PROMPT")
-        prompt_parts = [prompt_text]
-
-        # ... ( lógica para construir el prompt con payload.data.fields) ... 
-        for field in payload.data.fields:
-            label = field.label
-            label_str = "null" if label is None else str(label).strip()
-            value = field.value
-            value_str = ""
-            if isinstance(value, list):
-                try:
-                    value_str = f'"{",".join(map(str, value))}"'
-                except Exception as e:
-                    logger.error(f"[{submission_id}] Error convirtiendo lista a string: {e}")
-                    value_str = "[Error procesando lista]"
-            elif value is None:
-                value_str = "null"
-            else:
-                value_str = str(value)
-            prompt_parts.append(f"Pregunta: {label_str} - Respuesta: {value_str}")
-
-    elif mode == "consulting":
-        logger.info(f"[{submission_id}] Formulario CFO detectado. Procesando respuestas.")
-
-        # --- Generación del Prompt ---
-        # Extraer el prompt de la carpeta de prompts
-        prompt_text = load_prompt_from_file("CONSULTING_PROMPT")
-        prompt_parts = [prompt_text]
-
-        # ... ( lógica para construir el prompt con payload.data.fields) ... 
-        for field in payload.data.fields:
-            label = field.label
-            label_str = "null" if label is None else str(label).strip()
-            value = field.value
-            value_str = ""
-            if isinstance(value, list):
-                try:
-                    value_str = f'"{",".join(map(str, value))}"'
-                except Exception as e:
-                    logger.error(f"[{submission_id}] Error convirtiendo lista a string: {e}")
-                    value_str = "[Error procesando lista]"
-            elif value is None:
-                value_str = "null"
-            else:
-                value_str = str(value)
-            prompt_parts.append(f"Pregunta: {label_str} - Respuesta: {value_str}")
-
+    if mode == "unknown":
+        logger.warning(f"[{submission_id}] Tipo de formulario desconocido. Usando prompt genérico.")
+        prompt_parts = ["Analiza la siguiente respuesta de un formulario\n", "Proporciona un resumen o conclusión en formato markdown:\n\n"]
     else:
-        logger.info(f"[{submission_id}] Otro tipo de formulario detectado. Procesando respuestas.")
-
-        # --- Generación del Prompt (sin cambios) ---
-        prompt_parts = ["Analiza la siguiente respuesta de encuesta de un CFO\n", "Proporciona un resumen o conclusión en formato markdown:\n\n"]
+        # Extraer el prompt de la carpeta de prompts
+        prompt_text = load_prompt_from_file(mode)
+        prompt_parts = [prompt_text]
 
         # ... ( lógica para construir el prompt con payload.data.fields) ... 
         for field in payload.data.fields:
@@ -223,6 +175,7 @@ def generate_prompt(payload: TallyWebhookPayload, submission_id: str, mode: str)
             else:
                 value_str = str(value)
             prompt_parts.append(f"Pregunta: {label_str} - Respuesta: {value_str}")
+
 # -------------------------------------------------
     full_prompt = "".join(prompt_parts)
     return full_prompt
@@ -465,8 +418,6 @@ async def handle_tally_webhook(payload: TallyWebhookPayload, background_tasks: B
     logger.info(f"[{submission_id}] Webhook recibido. Verificando Supabase (ID: {submission_id}).")
     logger.info(f"[{submission_id}] Event ID: {payload.eventId}, Event Type: {payload.eventType}")
 
-    logger.info(f"[{submission_id}] Payload recibido: {payload}")
-
     try:
         # Verificar si ya existe un estado final (success o error) o si aún está procesando
         # Usamos SET con NX (Not Exists) y GET para hacerlo atómico y evitar race conditions
@@ -508,11 +459,11 @@ async def handle_tally_webhook(payload: TallyWebhookPayload, background_tasks: B
             logger.info(f"[{submission_id}] Tarea de Gemini iniciada en segundo plano.")
         
             # --- Generación del Prompt para consultoría ---
-            prompt_consulting = generate_prompt(payload, submission_id, "consulting")
+            prompt_consulting = generate_prompt(payload, submission_id, "CONSULTING")
             logger.debug(f"[{submission_id}] Prompt para Gemini (Consulting): {prompt_consulting[:200]}...")
     
             # --- Iniciar Tarea en Segundo Plano (después de respuesta cliente) ---
-            background_tasks.add_task(generate_gemini_response, submission_id, prompt_consulting, "consulting")
+            background_tasks.add_task(generate_gemini_response, submission_id, prompt_consulting, "CONSULTING")
             logger.info(f"[{submission_id}] Tarea de Gemini iniciada en segundo plano.")
 
         elif MODEL == "deepseek":
@@ -525,11 +476,11 @@ async def handle_tally_webhook(payload: TallyWebhookPayload, background_tasks: B
             logger.info(f"[{submission_id}] Tarea de DeepSeek iniciada en segundo plano.")
 
             # --- Generación del Prompt para consultoría ---
-            prompt_consulting = generate_prompt(payload, submission_id, "consulting")
+            prompt_consulting = generate_prompt(payload, submission_id, "CONSULTING")
             logger.debug(f"[{submission_id}] Prompt para DeepSeek (Consulting): {prompt_consulting[:200]}...")
 
             # --- Iniciar Tarea en Segundo Plano (después de respuesta cliente) ---
-            background_tasks.add_task(generate_deepseek_response, submission_id, prompt_consulting, "consulting")
+            background_tasks.add_task(generate_deepseek_response, submission_id, prompt_consulting, "CONSULTING")
             logger.info(f"[{submission_id}] Tarea de DeepSeek iniciada en segundo plano.")
 
         elif MODEL == "openai":
@@ -542,11 +493,11 @@ async def handle_tally_webhook(payload: TallyWebhookPayload, background_tasks: B
             logger.info(f"[{submission_id}] Tarea de OpenAI iniciada en segundo plano.")
 
             # --- Generación del Prompt para consultoría ---
-            prompt_consulting = generate_prompt(payload, submission_id, "consulting")
+            prompt_consulting = generate_prompt(payload, submission_id, "CONSULTING")
             logger.debug(f"[{submission_id}] Prompt para OpenAI (Consulting): {prompt_consulting[:200]}...")
 
             # --- Iniciar Tarea en Segundo Plano (después de respuesta cliente) ---
-            background_tasks.add_task(generate_openai_response, submission_id, prompt_consulting, "consulting")
+            background_tasks.add_task(generate_openai_response, submission_id, prompt_consulting, "CONSULTING")
             logger.info(f"[{submission_id}] Tarea de OpenAI iniciada en segundo plano.")
 
         return {"status": "ok", "message": "Processing started"}
