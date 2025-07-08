@@ -76,8 +76,6 @@ try:
         st.rerun()
 
     elif status == STATUS_SUCCESS:
-        st.balloons() # Celebrar
-        #st.success("Análisis Completado!")
         
         st.markdown(result_text) # Muestra el resultado del análisis
 

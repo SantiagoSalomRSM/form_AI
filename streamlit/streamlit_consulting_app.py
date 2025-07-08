@@ -85,16 +85,14 @@ try:
         my_bar = st.progress(0, text=progress_text)
 
         for percent_complete in range(100):
-            # take 2 seconds to simulate processing
-            time.sleep(0.02)  # Simula el tiempo de procesamiento
+            # take 5 seconds to simulate processing
+            time.sleep(0.05)  # Simula el tiempo de procesamiento
             my_bar.progress(percent_complete, text=progress_text)
         
         my_bar.empty()
         st.rerun()
 
     elif status == STATUS_SUCCESS:
-        st.balloons() # Celebrar
-        #st.success("Análisis Completado!")
         
         st.markdown(result_text) # Muestra el resultado del análisis
 

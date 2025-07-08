@@ -434,8 +434,7 @@ async def handle_tally_webhook(payload: TallyWebhookPayload, background_tasks: B
         # Extraer información relevante del formulario
         form_type = detect_form_type(payload)
         response = summarize_payload(payload)
-        #ai_preference = extract_ai_preference(payload)
-        #logger.info(f"[{submission_id}] Form type detectado: {form_type}, AI preference: {ai_preference}")
+        
         supabase_client.table("form_AI_DB").insert({
                 "submission_id": submission_id,
                 "status": STATUS_PROCESSING,
