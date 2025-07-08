@@ -34,7 +34,7 @@ col1, col2, col3 = st.columns([1, 1, 1])
 with col2:
     st.image(
         LOGO_URL,
-        # use_container_width=True, 
+        use_container_width=True, 
     )
 
 #st.title("Análisis de Resultados del Formulario")
