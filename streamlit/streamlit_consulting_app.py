@@ -47,7 +47,6 @@ LOGO_URL = "https://raw.githubusercontent.com/SantiagoSalomRSM/form_AI/master/im
 
 # Título y configuración de la página icono logo
 st.set_page_config(page_title="Análisis de Resultados del Formulario",
-                   layout="wide",
                    page_icon=LOGO_URL)
 
 # Use columns to center the image
