@@ -27,9 +27,9 @@ except Exception as e:
 
 LOGO_URL = "https://raw.githubusercontent.com/SantiagoSalomRSM/form_AI/master/images/RSM Standard Logo RGB.png" 
 
-# Título y configuración de la página 
+# Título y configuración de la página auotmatica para dispositivo móvil 
 st.set_page_config(page_title="Análisis de Resultados del Formulario",
-                   layout="wide",
+                   layout="",
                    page_icon=LOGO_URL)
 
 
