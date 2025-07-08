@@ -207,7 +207,7 @@ async def generate_gemini_response(submission_id: str, prompt: str, prompt_type:
         # --- Actualizar Supabase con el resultado ---
         if result_text:
             # Guardar resultado en Supabase
-            if prompt_type == "consulting":
+            if prompt_type == "CONSULTING":
                 try:
                     supabase_client.table("form_AI_DB").update({
                         "submission_id": submission_id,
@@ -274,7 +274,7 @@ async def generate_deepseek_response(submission_id: str, prompt: str, prompt_typ
 
         # --- Actualizar Supabase con el resultado ---
         if result_text:
-            if prompt_type == "consulting":
+            if prompt_type == "CONSULTING":
                 try:
                     supabase_client.table("form_AI_DB").update({
                         "submission_id": submission_id,
@@ -359,7 +359,7 @@ async def generate_openai_response(submission_id: str, prompt: str, prompt_type:
 
         # --- Actualizar Supabase con el resultado ---
         if result_text:
-            if prompt_type == "consulting":
+            if prompt_type == "CONSULTING":
                 try:
                     supabase_client.table("form_AI_DB").update({
                         "submission_id": submission_id,
