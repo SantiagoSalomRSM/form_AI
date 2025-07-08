@@ -80,14 +80,6 @@ try:
         
         st.markdown(result_text) # Muestra el resultado del análisis
 
-        # --- Botón para descargar el resultado como archivo Markdown ---
-        st.download_button(
-            label="⬇️ Descargar análisis",
-            data=result_text,
-            file_name=f"analisis_{submission_id}.md",
-            mime="text/markdown"
-        )
-        
         if user_responses:
             st.divider()
             with st.expander("Mostrar respuestas del usuario"):
