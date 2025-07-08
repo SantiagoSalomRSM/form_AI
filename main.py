@@ -131,7 +131,7 @@ def detect_form_type(payload: TallyWebhookPayload) -> str:
     """Detecta el form type basándose en la primera label o key."""
     type = "unknown"  # Valor por defecto
     if payload.data.formName:
-        formName = payload.data.formName:
+        formName = payload.data.formName
         if formName.strip() == 'Formulario autodiagnóstico de mis sistemas de información.':
             return "CFO_Form"
     return type
