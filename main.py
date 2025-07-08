@@ -129,12 +129,12 @@ def summarize_payload(payload: TallyWebhookPayload) -> str:
 
 def detect_form_type(payload: TallyWebhookPayload) -> str:
     """Detecta el form type basándose en la primera label o key."""
-    type = "unknown"  # Valor por defecto
+    mode = "unknown"  # Valor por defecto
     if payload.data.formName:
         formName = payload.data.formName
         if formName.strip() == 'Formulario autodiagnóstico de mis sistemas de información.':
             return "CFO_Form"
-    return type
+    return mode
 
 def load_prompt_from_file(prompt_name: str) -> str:
     """Carga un prompt desde un archivo en la carpeta de prompts."""
@@ -181,7 +181,7 @@ def generate_prompt(payload: TallyWebhookPayload, submission_id: str, mode: str)
     return full_prompt
 
 # --- Lógica para interactuar con Gemini ---
-async def generate_gemini_response(submission_id: str, prompt: str, prompt_type: str):
+async def generate_gemini_response(submission_id: str, prompt: str, mode: str):
     """Genera una respuesta de Gemini y actualiza Supabase con el resultado."""
     logger.info(f"[{submission_id}] Iniciando tarea Gemini.")
     
@@ -207,7 +207,7 @@ async def generate_gemini_response(submission_id: str, prompt: str, prompt_type:
         # --- Actualizar Supabase con el resultado ---
         if result_text:
             # Guardar resultado en Supabase
-            if prompt_type == "CONSULTING":
+            if mode == "CONSULTING":
                 try:
                     supabase_client.table("form_AI_DB").update({
                         "submission_id": submission_id,
@@ -259,7 +259,7 @@ async def generate_gemini_response(submission_id: str, prompt: str, prompt_type:
     logger.info(f"[{submission_id}] Tarea Gemini finalizada.")
 
 # --- Lógica para interactuar con DeepSeek ---
-async def generate_deepseek_response(submission_id: str, prompt: str, prompt_type: str):
+async def generate_deepseek_response(submission_id: str, prompt: str, mode: str):
     """Genera una respuesta de DeepSeek y actualiza Supabase con el resultado."""
     logger.info(f"[{submission_id}] Iniciando tarea DeepSeek.")
     
@@ -274,7 +274,7 @@ async def generate_deepseek_response(submission_id: str, prompt: str, prompt_typ
 
         # --- Actualizar Supabase con el resultado ---
         if result_text:
-            if prompt_type == "CONSULTING":
+            if mode == "CONSULTING":
                 try:
                     supabase_client.table("form_AI_DB").update({
                         "submission_id": submission_id,
@@ -344,7 +344,7 @@ async def generate_deepseek_response(submission_id: str, prompt: str, prompt_typ
     logger.info(f"[{submission_id}] Tarea DeepSeek finalizada.")
 
 # --- Lógica para interactuar con OpenAI ---
-async def generate_openai_response(submission_id: str, prompt: str, prompt_type: str):
+async def generate_openai_response(submission_id: str, prompt: str, mode: str):
     """Genera una respuesta de OpenAI y actualiza Supabase con el resultado."""
     logger.info(f"[{submission_id}] Iniciando tarea OpenAI.")
     
@@ -359,7 +359,7 @@ async def generate_openai_response(submission_id: str, prompt: str, prompt_type:
 
         # --- Actualizar Supabase con el resultado ---
         if result_text:
-            if prompt_type == "CONSULTING":
+            if mode == "CONSULTING":
                 try:
                     supabase_client.table("form_AI_DB").update({
                         "submission_id": submission_id,
