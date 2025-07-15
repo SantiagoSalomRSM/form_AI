@@ -7,7 +7,6 @@ import google.generativeai as genai
 from dotenv import load_dotenv
 from supabase import create_client, Client
 from openai import OpenAI
-# from prompts.prompt_parts import CONSULTING_PROMPT, CFO_FORM_PROMPT
 from openai import OpenAIError, APIError
 
 # --- Configuración Inicial ---
