@@ -176,7 +176,6 @@ def generate_prompt(payload: TallyWebhookPayload, submission_id: str, mode: str)
                 value_str = str(value)
             prompt_parts.append(f"Pregunta: {label_str} - Respuesta: {value_str}")
 
-# -------------------------------------------------
     full_prompt = "".join(prompt_parts)
     return full_prompt
 
